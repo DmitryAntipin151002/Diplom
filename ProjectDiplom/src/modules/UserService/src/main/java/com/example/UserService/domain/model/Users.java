@@ -2,34 +2,37 @@ package model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
-@Table(name = "users", schema = "public")
-@AllArgsConstructor
-@NoArgsConstructor
+@Table(name = "users")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Users {
     @Id
-    @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer user_id;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @Column(name = "email")
-    public String email;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
-    @Column(name = "password_hash")
-    public String password_hash;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
-    @Column(name = "created_At")
-    public String created_at;
-
-
-
-
-
-
-
-
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
+
+
+
+
+
+

@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_activity")
-public class UserActivity {
+@Table(name = "subscriptions")
+public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -14,12 +14,10 @@ public class UserActivity {
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
-    private Integer eventsCreated = 0;
-    private Integer eventsParticipated = 0;
+    private String sportType;
 
-    @Column(name = "last_active", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime lastActive;
+    @Column(name = "subscribed_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime subscribedAt;
 
 
 }
-
