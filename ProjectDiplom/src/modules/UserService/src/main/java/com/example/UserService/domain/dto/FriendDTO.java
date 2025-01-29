@@ -10,8 +10,5 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FriendDTO {
-    private Integer id;
-    private Integer userId;
-    private Integer friendId;
-    private LocalDateTime createdAt;
+    private Long friendId;
 }
