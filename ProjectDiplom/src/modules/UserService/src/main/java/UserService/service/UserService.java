@@ -11,4 +11,6 @@ public interface UserService {
     AuthResponse register(RegistrationRequest request) throws AuthException;
     AuthResponse login(LoginRequest request) throws AuthException;
     Users getAuthenticatedUser(String email) throws AuthException;
+    public void deleteUser(Long userId);
+    public Users getUserById(Long userId);
 }

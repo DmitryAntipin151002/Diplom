@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 
 
 @Mapper(componentModel = "spring")
-@Component
+
 public interface UserProfileMapper {
 
     // Маппинг UserProfile -> UserProfileDTO, используя user.userId
-    @Mapping(target = "userId", source = "user.userId") // Теперь MapStruct должен видеть userId
+    @Mapping(target = "userId", source = "user.userId")
     UserProfileDTO toDto(UserProfile userProfile);
 
     // Маппинг UserProfileDTO -> UserProfile, игнорируем user (его задаем вручную)
@@ -25,6 +25,10 @@ public interface UserProfileMapper {
 
     // Маппинг UserProfile -> UserProfileResponse
     UserProfileResponse toUserProfileResponse(UserProfile userProfile);
+
+    // Маппинг ProfileUpdateRequest -> UserProfile, игнорируем user (он устанавливается отдельно)
+    @Mapping(target = "user", ignore = true)
+    UserProfile toUserProfile(ProfileUpdateRequest request);
 
     // Обновление UserProfile из запроса
     void updateUserProfileFromRequest(ProfileUpdateRequest request, @MappingTarget UserProfile userProfile);

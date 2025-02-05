@@ -10,7 +10,6 @@ import UserService.repository.ProfileRepository;
 import UserService.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 @Service
 @RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
@@ -29,9 +28,19 @@ public class ProfileServiceImpl implements ProfileService {
     public UserProfileResponse updateProfile(Users user, ProfileUpdateRequest request) throws ResourceNotFoundException {
         UserProfile profile = profileRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
-
         profileMapper.updateUserProfileFromRequest(request, profile);
         UserProfile updatedProfile = profileRepository.save(profile);
         return profileMapper.toUserProfileResponse(updatedProfile);
+    }
+
+    @Override
+    public UserProfileResponse createProfile(Users user, ProfileUpdateRequest request) {
+        if (profileRepository.findByUser(user).isPresent()) {
+            throw new IllegalStateException("Profile already exists for this user");
+        }
+        UserProfile profile = profileMapper.toUserProfile(request);
+        profile.setUser(user);
+        UserProfile savedProfile = profileRepository.save(profile);
+        return profileMapper.toUserProfileResponse(savedProfile);
     }
 }

@@ -2,21 +2,18 @@ package UserService.service.Impl;
 
 import UserService.domain.dto.request.LoginRequest;
 import UserService.domain.dto.request.RegistrationRequest;
+import UserService.domain.dto.response.AuthResponse;
 import UserService.domain.model.UserActivity;
+import UserService.domain.model.UserProfile;
 import UserService.domain.model.Users;
 import UserService.exception.ResourceNotFoundException;
-import UserService.domain.dto.response.AuthResponse;
-
-import UserService.domain.model.UserProfile;
 import UserService.repository.ProfileRepository;
 import UserService.repository.UserActivityRepository;
 import UserService.repository.UsersRepository;
 import UserService.service.UserService;
-import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,22 +21,20 @@ public class UserServiceImpl implements UserService {
     private final UsersRepository userRepository;
     private final ProfileRepository profileRepository;
     private final UserActivityRepository activityRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public AuthResponse register(RegistrationRequest request) throws AuthException {
+    public AuthResponse register(RegistrationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AuthException("Email already exists");
+            throw new IllegalArgumentException("Email already exists");
         }
 
         Users user = Users.builder()
                 .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .passwordHash(request.getPassword()) // ❌ Убрали шифрование пароля
                 .build();
 
         user = userRepository.save(user);
 
-        // Create profile and activity
         profileRepository.save(UserProfile.builder().user(user).build());
         activityRepository.save(UserActivity.builder().user(user).build());
 
@@ -49,12 +44,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthResponse login(LoginRequest request) throws AuthException {
+    public AuthResponse login(LoginRequest request) {
         Users user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AuthException("Invalid credentials"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new AuthException("Invalid credentials");
+        if (!request.getPassword().equals(user.getPasswordHash())) { // ❌ Убрали проверку с PasswordEncoder
+            throw new IllegalArgumentException("Invalid credentials");
         }
 
         return AuthResponse.builder()
@@ -66,5 +61,20 @@ public class UserServiceImpl implements UserService {
     public Users getAuthenticatedUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    public Users getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
     }
 }
