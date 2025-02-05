@@ -9,12 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Table(name = "user_activity")
 public class UserActivity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -25,12 +26,11 @@ public class UserActivity {
 
     @Builder.Default
     private Integer eventsCreated = 0;
+
     @Builder.Default
     private Integer eventsParticipated = 0;
+
     @Builder.Default
     @Column(name = "last_active", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime lastActive = LocalDateTime.now();
-
-
 }
-
