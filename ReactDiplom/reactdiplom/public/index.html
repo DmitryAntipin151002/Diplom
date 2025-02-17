@@ -1,43 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+<!-- Вставляем `icons.svg` прямо в страницу -->
+<div id="svg-sprites"></div>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+<div class="wrapper">
+    <div class="header">
+        <h3 class="sign-in">Sign in</h3>
+        <div class="button">
+            Register
+        </div>
+    </div>
+    <div class="clear"></div>
+    <form action="#">
+        <div>
+            <label class="user" for="name">
+                <svg viewBox="0 0 32 32">
+                    <use xlink:href="#icon-user"></use>
+                </svg>
+            </label>
+            <input class="user-input" type="text" name="name" id="name" placeholder="My name is"  />
+        </div>
+        <div>
+            <label class="lock" for="password">
+                <svg viewBox="0 0 32 32">
+                    <use xlink:href="#icon-lock"></use>
+                </svg>
+            </label>
+            <input type="password" name="password" id="password" placeholder="Password" />
+        </div>
+        <div>
+            <input type="submit" value="Sign in" />
+        </div>
+        <div class="radio-check">
+            <input type="radio" class="radio-no" id="no" name="remember" value="no" checked>
+            <label for="no"><i class="fa fa-times"></i></label>
+            <input type="radio" class="radio-yes" id="yes" name="remember" value="yes">
+            <label for="yes"><i class="fa fa-check"></i></label>
+            <span class="switch-selection"></span>
+        </div>
+        <span class="check-label">Remember me</span>
+        <span class="forgot-label">Lost your password?</span>
+        <div class="clear"></div>
+    </form>
+</div>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+    // Загружаем icons.svg и вставляем его в HTML
+    fetch("icons.svg")
+        .then(response => response.text())
+        .then(svg => {
+            document.getElementById("svg-sprites").innerHTML = svg;
+        })
+        .catch(error => console.error("Ошибка загрузки SVG:", error));
+</script>
+
+</body>
 </html>

@@ -1,37 +1,23 @@
-import { createContext, useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { createContext, useContext, useState } from 'react';
+import { login as authLogin, register as authRegister } from '../services/authService';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
-
-    const login = (userData) => {
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-
-        // Навигация после рендера
-        setTimeout(() => navigate("/profile"), 0);
+    const login = async (credentials) => {
+        const data = await authLogin(credentials);
+        setUser(data);
     };
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem("user");
-
-        // Навигация после рендера
-        setTimeout(() => navigate("/login"), 0);
+    const register = async (credentials) => {
+        const data = await authRegister(credentials);
+        setUser(data);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, register }}>
             {children}
         </AuthContext.Provider>
     );
