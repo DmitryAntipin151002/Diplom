@@ -26,6 +26,8 @@
 			<module>src/modules/EurekaServer</module>
 			<module>src/modules/ApiGatewayService</module>
 			<module>src/modules/GameService</module>
+			<module>src/modules/SocialService</module>
+			<module>src/modules/ChatService</module>
 	</modules>
 
 	<properties>
