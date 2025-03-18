@@ -27,7 +27,7 @@
 			<module>src/modules/ApiGatewayService</module>
 			<module>src/modules/GameService</module>
 			<module>src/modules/SocialService</module>
-			<module>src/modules/ChatService</module>
+			<module>src/modules/AuthenticationService</module>
 	</modules>
 
 	<properties>
