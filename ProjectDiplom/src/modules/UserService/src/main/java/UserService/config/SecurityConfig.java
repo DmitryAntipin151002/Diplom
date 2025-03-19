@@ -34,6 +34,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        // Разрешаем доступ к Swagger UI и документации
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui/index.html", "/error").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/favicon.ico", "/v3/api-docs/**").permitAll()
+
                         // .requestMatchers(HttpMethod.GET,"/api/users", "/api/{id}").hasAuthority("ADMIN")
                        // .requestMatchers(HttpMethod.POST,"/api/auth/**").permitAll()  // Разрешаем регистрацию и логин
                        // .requestMatchers(HttpMethod.PUT, "/api/users/{id}/role").hasAuthority("ADMIN") // Все могут смотреть

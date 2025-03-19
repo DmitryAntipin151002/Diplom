@@ -28,7 +28,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(String id) {
-        UUID uuid = UUID.fromString(id);
+        if (id == null || id.isEmpty()) {
+            log.error("ID cannot be null or empty");
+            throw new IllegalArgumentException("ID cannot be null or empty");
+        }
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid UUID format: {}", id);
+            throw new UserNotFoundException("Invalid UUID format: " + id);
+        }
         return userRepository.findById(uuid).orElseThrow(() -> {
             log.error(USER_WITH_ID_WAS_NOT_FOUND, id);
             return new UserNotFoundException(ID + id);
