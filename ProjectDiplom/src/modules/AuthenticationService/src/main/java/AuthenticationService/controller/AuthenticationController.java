@@ -22,11 +22,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Validated
 public interface AuthenticationController {
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=51286251&src=contextnavpagetreemode">
-     * AuthS-1 Аутентификация пользователя</a>
-     */
+
     @Operation(summary = "Аутентификация пользователя по почте и паролю")
     @ApiResponse(responseCode = CODE_OK, description = OK,
             content = {@Content(mediaType = APPLICATION_JSON,
@@ -43,11 +39,7 @@ public interface AuthenticationController {
     @PostMapping
     ResponseEntity<SuccessfulUserLoginDto> authenticate(@RequestBody @Valid UserLoginRequestDto loginInfo);
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=51286620">
-     * AuthS-2 Получение кода верификации</a>
-     */
+
     @Operation(summary = "Получение кода верификации")
     @ApiResponse(responseCode = CODE_OK, description = OK,
             content = {@Content(mediaType = APPLICATION_JSON,
@@ -64,11 +56,7 @@ public interface AuthenticationController {
     @GetMapping("/{userId}/code")
     ResponseEntity<VerificationCodeDto> getVerificationCode(@PathVariable  String userId);
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=51286550">
-     * AuthS-3 Отправка кода верификации и получение токенов доступа</a>
-     */
+
     @Operation(summary = "Получение JWT по коду верификации")
     @ApiResponse(responseCode = CODE_OK, description = OK,
             content = {@Content(mediaType = APPLICATION_JSON,
@@ -90,11 +78,7 @@ public interface AuthenticationController {
                                        @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                        @RequestBody @Valid VerificationCodeDto verificationCodeDto);
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=52003261">
-     * AuthS-4</a>
-     */
+
     @Operation(summary = "Изменение пароля пользователя")
     @ApiResponse(responseCode = CODE_OK, description = OK)
     @ApiResponse(responseCode = CODE_BAD_REQUEST, description = BAD_REQUEST,
@@ -110,11 +94,7 @@ public interface AuthenticationController {
     ResponseEntity<?> changePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                      @RequestBody @Valid ChangePasswordDto changePasswordDto);
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=52013502">
-     * AuthS-5</a>
-     */
+
     @Operation(summary = "Проверка существования пользователя для восстановления доступа в систему")
     @ApiResponse(responseCode = CODE_OK, description = OK)
     @ApiResponse(responseCode = CODE_BAD_REQUEST, description = BAD_REQUEST,
@@ -132,11 +112,7 @@ public interface AuthenticationController {
     @PostMapping("/recovery")
     ResponseEntity<JwtRecoveryTokenDto> userExistenceCheck(@RequestBody @Valid EmailAndPhoneDto emailAndPhoneDto);
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=52013500">
-     * AuthS-6</a>
-     */
+
     @Operation(summary = "Отправка нового пароля при восстановлении")
     @ApiResponse(responseCode = CODE_OK, description = OK)
     @ApiResponse(responseCode = CODE_BAD_REQUEST, description = BAD_REQUEST,
@@ -155,27 +131,7 @@ public interface AuthenticationController {
     ResponseEntity<Void> updatePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                         @RequestBody @Valid UpdatePasswordDto updatePasswordDto);
 
-    /**
-     * todo: replace link when documentation will be changed and actual
-     * <a href="https://wiki.astondevs.ru/pages/viewpage.action?pageId=62041562">
-     * AuthS-7</a>
-     */
-    @Operation(summary = "Обновление JWT токена")
-    @ApiResponse(responseCode = CODE_OK, description = OK,
-            content = {@Content(mediaType = "application/json",
-                    schema = @Schema(implementation = JwtAccessAndRefreshDto.class))})
-    @ApiResponse(responseCode = CODE_THE_USER_IS_NOT_AUTHORIZED, description = THE_USER_IS_NOT_AUTHORIZED,
-            content = {@Content(mediaType = "application/json",
-                    schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))})
-    @ApiResponse(responseCode = CODE_INTERNAL_SERVER_ERROR, description = INTERNAL_SERVER_ERROR,
-            content = {@Content(mediaType = "application/json",
-                    schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))})
-    @PostMapping("/token")
-    ResponseEntity<JwtAccessAndRefreshDto> jwtUpdateToken(@RequestBody @Valid JwtRefreshTokenDto jwtRefreshTokenDto);
 
-    /**
-     * Регистрация нового пользователя
-     */
     @Operation(summary = "Регистрация нового пользователя")
     @ApiResponse(responseCode = CODE_OK, description = OK,
             content = {@Content(mediaType = "application/json", schema = @Schema(implementation = SuccessfulUserRegistrationDto.class))})

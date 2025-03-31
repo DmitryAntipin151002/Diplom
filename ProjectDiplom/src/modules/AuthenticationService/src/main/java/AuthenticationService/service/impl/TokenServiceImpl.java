@@ -49,35 +49,7 @@ public class TokenServiceImpl implements TokenService {
         }
     }
 
-    @Override
-    @Transactional
-    public JwtAccessAndRefreshDto jwtUpdateToken(JwtRefreshTokenDto jwtRefreshTokenDto) {
-        String userId = jwtRefreshTokenDto.userId();
-        String rawToken = jwtRefreshTokenDto.refreshToken();
 
-        if (rawToken == null || rawToken.isEmpty()) {
-            throw new BadRefreshTokenException(REFRESH_TOKEN_NULL_OR_EMPTY);
-        }
-        String refreshToken = BEARER + rawToken;
-
-        jwtTokenUtil.checkRefreshToken(refreshToken);
-        String tokenUserId = jwtTokenUtil.getUserId(refreshToken);
-
-        if (!userId.equals(tokenUserId)) {
-            throw new TokenMismatchException(USER_ID_WITH_THIS_REFRESH_TOKEN_NOT_FOUND_USER_ID_EXCEPTION);
-        }
-
-        User user = userService.findById(userId);
-
-        // Убираем вызовы redisDataService, так как Redis больше не используется
-        // В этой логике можно добавить другие механизмы для сохранения ролей и прав пользователя, если это необходимо.
-
-        String newAccessToken = jwtTokenUtil.createAccessToken(userId);
-        String newRefreshToken = jwtTokenUtil.createRefreshToken(userId);
-
-        log.info(JWT_TOKEN_UPDATED_SUCCESSFULLY);
-        return new JwtAccessAndRefreshDto(newAccessToken, newRefreshToken);
-    }
 
     private JwtRecoveryTokenDto getRecoveryToken(String userId) {
         String recoveryToken = jwtTokenUtil.createRecoveryToken(userId);

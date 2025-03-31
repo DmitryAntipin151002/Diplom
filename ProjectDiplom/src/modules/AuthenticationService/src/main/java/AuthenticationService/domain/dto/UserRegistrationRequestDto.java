@@ -22,11 +22,7 @@ public class UserRegistrationRequestDto {
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
-    @NotBlank(message = "Phone number is required")
-    private String phone;
-
     private RoleName roleName;
-
 
     private Long roleId; // Здесь мы используем roleId для задания роли
 

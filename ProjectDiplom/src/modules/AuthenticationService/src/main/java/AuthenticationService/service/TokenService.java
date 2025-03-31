@@ -1,6 +1,5 @@
 package AuthenticationService.service;
 
-import AuthenticationService.domain.dto.JwtAccessAndRefreshDto;
 import AuthenticationService.domain.dto.JwtRefreshTokenDto;
 import AuthenticationService.domain.dto.JwtToken;
 import AuthenticationService.domain.dto.VerificationCodeDto;
@@ -20,12 +19,5 @@ public interface TokenService {
      */
     JwtToken getTokens(String userId, String token, VerificationCodeDto verificationCodeDto);
 
-    /**
-     * Обновление JWT токенов доступа и обновления
-     *
-     * @param jwtRefreshTokenDto dto, содержащее id пользователя и токен для получения новой пары токенов
-     * @return JwtAccessAndRefreshToken - dto, содержащее обновленную пару токена доступа (accessToken) и
-     * токена восстановления (refreshToken)
-     */
-    JwtAccessAndRefreshDto jwtUpdateToken(JwtRefreshTokenDto jwtRefreshTokenDto);
+
 }

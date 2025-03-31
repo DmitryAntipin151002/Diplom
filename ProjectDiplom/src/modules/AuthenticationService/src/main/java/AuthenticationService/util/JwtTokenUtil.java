@@ -42,7 +42,7 @@ public class JwtTokenUtil {
                     .parseClaimsJws(tokenWithoutBearer).getBody();
             return claims.get(TYPE, String.class);
         } else {
-            throw new TokenException();
+            throw new TokenException("Token is null or empty");
         }
     }
 
@@ -82,15 +82,61 @@ public class JwtTokenUtil {
                 .compact();
     }
 
+
     public String getUserId(String token) {
-        if (!token.isEmpty()) {
-            String tokenWithoutBearer = token.substring(BEARER.length());
-            Claims claims = Jwts.parserBuilder().setSigningKey(RsaKeyUtils.getPublicKey(publicKey)).build()
-                    .parseClaimsJws(tokenWithoutBearer).getBody();
-            return claims.get(ID, String.class);
-        } else {
-            throw new TokenException();
+        try {
+            log.debug("Attempting to extract userId from token: {}", maskToken(token));
+
+            if (token == null || token.isEmpty()) {
+                throw new TokenException("Token is null or empty");
+            }
+
+            // Удаляем 'Bearer ' если есть
+            String tokenWithoutBearer = token.startsWith(BEARER)
+                    ? token.substring(BEARER.length())
+                    : token;
+
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(RsaKeyUtils.getPublicKey(publicKey))
+                    .build()
+                    .parseClaimsJws(tokenWithoutBearer)
+                    .getBody();
+
+            // Проверяем все claims для диагностики
+            log.debug("Token claims: {}", claims);
+
+            // Пробуем получить ID разными способами (для совместимости)
+            String userId = claims.get(ID, String.class);
+            if (userId == null) {
+                userId = claims.get("id", String.class); // альтернативный ключ
+            }
+
+            if (userId == null || userId.isEmpty()) {
+                log.error("User ID not found in token claims. Available claims: {}", claims);
+                throw new TokenException("User ID not found in token");
+            }
+
+            log.debug("Successfully extracted userId: {}", userId);
+            return userId;
+
+        } catch (ExpiredJwtException e) {
+            log.error("Token expired: {}", e.getMessage());
+            throw new TokenExpiredException("Token expired");
+        } catch (MalformedJwtException e) {
+            log.error("Invalid token format: {}", e.getMessage());
+            throw new TokenException("Invalid token format");
+        } catch (SignatureException e) {
+            log.error("Invalid token signature: {}", e.getMessage());
+            throw new TokenException("Invalid token signature");
+        } catch (Exception e) {
+            log.error("Unexpected error while parsing token: {}", e.getMessage());
+            throw new TokenException("Token parsing failed");
         }
+    }
+
+    private String maskToken(String token) {
+        if (token == null || token.length() < 10) return "<invalid_token>";
+        return token.substring(0, 5) + "..." + token.substring(token.length() - 5);
     }
 
     public void checkRefreshToken(String refreshToken) {

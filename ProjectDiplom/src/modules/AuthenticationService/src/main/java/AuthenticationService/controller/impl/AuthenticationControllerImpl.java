@@ -36,11 +36,7 @@ public class AuthenticationControllerImpl implements AuthenticationController {
         return ResponseEntity.ok(authenticationService.authenticate(loginInfo));
     }
 
-//    @Override
-//    @GetMapping("/{userId}/code")
-//    public ResponseEntity<VerificationCodeDto> getVerificationCode(@PathVariable String userId) {
-//        return ResponseEntity.ok(authenticationService.generateVerificationCode(userId));
-//    }
+
 
     @Override
     @PostMapping("/{userId}/code")
@@ -54,6 +50,7 @@ public class AuthenticationControllerImpl implements AuthenticationController {
     @PatchMapping("/password")
     public ResponseEntity<?> changePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                             @RequestBody ChangePasswordDto changePasswordDto) {
+        // В сервис передается ID из ChangePasswordDto
         return ResponseEntity.ok(authenticationService.changePassword(token, changePasswordDto));
     }
 
@@ -69,12 +66,6 @@ public class AuthenticationControllerImpl implements AuthenticationController {
                                                @RequestBody UpdatePasswordDto updatePasswordDto) {
         userRecoveryService.updatePassword(token, updatePasswordDto);
         return ResponseEntity.ok().build();
-    }
-
-    @Override
-    @PostMapping("/token")
-    public ResponseEntity<JwtAccessAndRefreshDto> jwtUpdateToken(@RequestBody @Valid JwtRefreshTokenDto jwtRefreshTokenDto) {
-        return ResponseEntity.ok(tokenService.jwtUpdateToken(jwtRefreshTokenDto));
     }
 
     @Override

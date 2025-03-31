@@ -12,7 +12,7 @@ public class SuccessfulUserRegistrationDto {
 
     private String userId;
     private String email;
-    private String phone;
+
 
     // Getters and Setters
 }

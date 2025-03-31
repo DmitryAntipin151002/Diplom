@@ -15,4 +15,5 @@ public interface UserService {
 
     User save(User user);
 
+    public void updateUserStatusAfterLogin(User user);
 }

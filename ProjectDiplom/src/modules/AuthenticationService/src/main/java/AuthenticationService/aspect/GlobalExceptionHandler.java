@@ -23,8 +23,7 @@ import java.time.format.DateTimeParseException;
 import java.util.stream.Collectors;
 
 import static AuthenticationService.constants.ConfigurationConstants.*;
-import static AuthenticationService.constants.RedisConstants.NO_ATTEMPTS;
-import static AuthenticationService.constants.RedisConstants.NO_AUTHORITIES;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -88,17 +87,7 @@ public class GlobalExceptionHandler {
         return errorResponseBuilder(exception, ATTEMPT_LIMIT_EXCEEDED, request);
     }
 
-    @ExceptionHandler(AuthoritiesEmptyException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleAuthoritiesEmptyExceptions(AuthoritiesEmptyException exception, HttpServletRequest request) {
-        return errorResponseBuilder(exception, NO_AUTHORITIES, request);
-    }
 
-    @ExceptionHandler({AttemptsNotFoundException.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleAttemptsNotFoundExceptions(AttemptsNotFoundException exception, HttpServletRequest request) {
-        return errorResponseBuilder(exception, NO_ATTEMPTS, request);
-    }
 
     @ExceptionHandler(UserIsBlockedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)

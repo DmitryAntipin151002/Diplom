@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -48,10 +49,8 @@ public class User {
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")
     private Role role;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "USERS_AUTHORITY",
-            joinColumns = @JoinColumn(name = "USER_ID", referencedColumnName = "ID"),
-            inverseJoinColumns = @JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")
-    )
-    private Set<Authority> authorities = new HashSet<>();
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+    
 }

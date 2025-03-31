@@ -46,7 +46,7 @@ public class UserRecoveryServiceImpl implements UserRecoveryService {
 
         if (passwordEncoder.matches(newPassword, oldEncryptedPassword)) {
             log.error(THE_NEW_PASSWORD_MATCHES_THE_OLD_PASSWORD_FROM_THE_DB);
-            throw new NewPasswordMatchesOldPasswordException();
+            throw new NewPasswordMatchesOldPasswordException("The new password must not be the same as the old one");
         }
 
         user.setEncryptedPassword(passwordEncoder.encode(newPassword));

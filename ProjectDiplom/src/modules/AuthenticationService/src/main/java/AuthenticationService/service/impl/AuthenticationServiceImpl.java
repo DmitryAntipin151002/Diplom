@@ -7,6 +7,8 @@ import AuthenticationService.domain.mapper.UserMapper;
 import AuthenticationService.domain.model.Role;
 import AuthenticationService.domain.model.Status;
 import AuthenticationService.domain.model.User;
+import AuthenticationService.domain.model.VerificationCode;
+import AuthenticationService.repository.VerificationCodeRepository;
 import AuthenticationService.service.AuthenticationService;
 import AuthenticationService.service.UserService;
 import AuthenticationService.util.JwtTokenUtil;
@@ -18,11 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import static AuthenticationService.constants.SecurityConstants.IS_FIRST_ENTER_TOKEN;
 import static AuthenticationService.constants.ServiceConstants.*;
-import static AuthenticationService.domain.enums.StatusName.BLOCKED;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,6 +38,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserMapper userMapper;
     private final Random random = new Random();
     private final AuthenticationServiceProperties authenticationServiceProperties;
+    private final VerificationCodeRepository verificationCodeRepository;
 
     @Override
     @Transactional
@@ -67,13 +71,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional(noRollbackFor = AttemptCountFailException.class)
     public void checkVerificationCode(VerificationCodeDto verificationCodeDto, User user) {
-        String userId = user.getId().toString();
-
-        // Убираем Redis вызовы. Логика проверки кода и попыток будет другим.
+        // Извлекаем код из DTO
         String codeFromRequest = verificationCodeDto.code();
 
-        // Условие для сравнения кода
-        if (!"someCode".equals(codeFromRequest)) {  // Примерный код для проверки
+        // Получаем код из базы данных для данного пользователя
+        Optional<VerificationCode> optionalVerificationCode = verificationCodeRepository.findByUserId(user.getId());
+
+        // Проверяем, найден ли код
+        if (optionalVerificationCode.isEmpty()) {
+            throw new LoginFailException("Verification code not found for user.");
+        }
+
+        // Извлекаем код из объекта VerificationCode
+        String expectedCode = optionalVerificationCode.get().getCode();
+
+        // Сравниваем коды
+        if (!codeFromRequest.equals(expectedCode)) {
             throw new LoginFailException("The code is invalid.");
         }
     }
@@ -81,37 +94,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public Map<String, String> changePassword(String token, ChangePasswordDto changePasswordDto) {
-        try {
-            String userId = jwtTokenUtil.getUserId(token);
-            User user = userService.findById(userId);
+        // Получаем ID пользователя из токена
+        String userId = jwtTokenUtil.getUserId(token); // userId только из токена
+        User user = userService.findById(userId);
 
-            if (!passwordEncoder.matches(changePasswordDto.password(), user.getEncryptedPassword())) {
-                log.error(THE_PASSWORD_DOES_NOT_MATCH_THE_PASSWORD_FROM_THE_DB);
-                throw new PasswordNotMatchesException();
-            }
-
-            if (passwordEncoder.matches(changePasswordDto.newPassword(), user.getEncryptedPassword())) {
-                log.error(THE_NEW_PASSWORD_MATCHES_THE_OLD_PASSWORD_FROM_THE_DB);
-                throw new NewPasswordMatchesOldPasswordException();
-            }
-
-            user.setEncryptedPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
-            user.setIsFirstEnter(false);
-
-            String tokenType = jwtTokenUtil.getTokenType(token);
-            if (tokenType.equals(IS_FIRST_ENTER_TOKEN)) {
-                Map<String, String> tokens = new HashMap<>();
-                tokens.put("accessToken", jwtTokenUtil.createAccessToken(userId));
-                tokens.put("refreshToken", jwtTokenUtil.createRefreshToken(userId));
-                return tokens;
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            log.error("Error changing password: {}", e.getMessage());
-            throw new RuntimeException(e);
+        // Проверяем старый пароль
+        if (!passwordEncoder.matches(changePasswordDto.password(), user.getEncryptedPassword())) {
+            throw new PasswordNotMatchesException("The old password is incorrect");
         }
+
+        // Проверяем, что новый пароль отличается от старого
+        if (passwordEncoder.matches(changePasswordDto.newPassword(), user.getEncryptedPassword())) {
+            throw new NewPasswordMatchesOldPasswordException("The new password must not match the old one");
+        }
+
+        // Обновляем пароль и сбрасываем флаг первого входа
+        user.setEncryptedPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
+        user.setIsFirstEnter(false);
+
+        return Map.of("message", "Password successfully changed");
     }
+
 
     @Override
     @Transactional
@@ -122,11 +125,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new UserAlreadyExistsException("Email is already taken");
         }
 
-        // Проверка уникальности телефона
-        if (userService.existsByPhone(registrationInfo.getPhone())) {
-            log.error("Phone number already exists: {}", registrationInfo.getPhone());
-            throw new UserAlreadyExistsException("Phone number is already taken");
-        }
 
         // Получение роли по ID
         Role role = roleService.findById(registrationInfo.getRoleId())
@@ -135,7 +133,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Создание нового пользователя
         User newUser = new User();
         newUser.setEmail(registrationInfo.getEmail());
-        newUser.setPhoneNumber(registrationInfo.getPhone());
         newUser.setEncryptedPassword(passwordEncoder.encode(registrationInfo.getPassword()));
         newUser.setIsFirstEnter(true);  // Устанавливаем, что это первый вход
         newUser.setRole(role);  // Устанавливаем роль пользователя
@@ -147,7 +144,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         SuccessfulUserRegistrationDto response = new SuccessfulUserRegistrationDto();
         response.setUserId(savedUser.getId().toString());  // Используем ID из сохраненного пользователя
         response.setEmail(savedUser.getEmail());
-        response.setPhone(savedUser.getPhoneNumber());  // Убедимся, что используем правильное имя поля
+
 
         return response;
     }
