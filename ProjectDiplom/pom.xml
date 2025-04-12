@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.1</version>
+		<version>3.2.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -22,16 +22,15 @@
 
 	<!-- Описание модулей -->
 	<modules>
-		<module>src/modules/UserService</module>
-			<module>src/modules/EurekaServer</module>
-			<module>src/modules/ApiGatewayService</module>
-			<module>src/modules/GameService</module>
-			<module>src/modules/SocialService</module>
-			<module>src/modules/AuthenticationService</module>
+		<module>src/modules/EurekaServer</module>
+		<module>src/modules/ApiGatewayService</module>
+		<module>src/modules/AuthenticationService</module>
+		<module>src/modules/UserProfileService</module>
+		<module>src/modules/EventService</module>
 	</modules>
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 	</properties>
 
 	<build>

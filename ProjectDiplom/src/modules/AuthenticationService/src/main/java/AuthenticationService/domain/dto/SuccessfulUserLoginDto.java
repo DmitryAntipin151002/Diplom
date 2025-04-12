@@ -18,4 +18,6 @@ public record SuccessfulUserLoginDto(
 
         @Schema(description = "Флаг первого входа")
         Boolean isFirstEnter
+
+
 ) { }
