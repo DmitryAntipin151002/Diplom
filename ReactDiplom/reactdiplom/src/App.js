@@ -1,12 +1,19 @@
 import React from 'react';
-import AuthPage from '../src/pages/AuthPage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
+import PasswordRecoveryPage from './components/PasswordRecoveryPage';
 
 function App() {
     return (
-        <div className="App">
-            <AuthPage />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/password-recovery" element={<PasswordRecoveryPage />} />
+            </Routes>
+        </Router>
     );
 }
 
-export default App;
+export default App; // 🔥 ОБЯЗАТЕЛЬНО!

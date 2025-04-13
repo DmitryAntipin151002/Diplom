@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import static AuthenticationService.constants.ControllerConstants.CODE_BAD_REQUEST;
 import static AuthenticationService.constants.ControllerConstants.CODE_OK;
 
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RequestMapping("api/v1/authentication-service/login")
 @RestController
