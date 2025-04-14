@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import AuthService from '../services/AuthService';
-import './../assets/RecoveryPage.css';
+import AuthService from '../../services/AuthService';
+import '../../assets/AuthS/RecoveryPage.css';
 
 const RecoveryPasswordPage = () => {
     const [newPassword, setNewPassword] = useState('');

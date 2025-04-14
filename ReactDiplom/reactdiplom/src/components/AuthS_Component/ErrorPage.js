@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../assets/LoginPage.css';
+import '../../assets/AuthS/LoginPage.css';
 
 const ErrorPage = () => {
     const navigate = useNavigate();

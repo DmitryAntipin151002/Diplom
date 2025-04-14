@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthService from "../services/AuthService";
-import "../assets/RegisterPage.css";
+import AuthService from "../../services/AuthService";
+import "../../assets/AuthS/RegisterPage.css";
 
 const RegisterPage = () => {
     const [email, setEmail] = useState('');
@@ -143,7 +143,7 @@ const RegisterPage = () => {
 
                     <p className="auth-footer">
                         Уже есть аккаунт?
-                        <a href="/" className="link">Войти здесь</a>
+                        <a href="/reactdiplom/public" className="link">Войти здесь</a>
                     </p>
                 </div>
             </div>
