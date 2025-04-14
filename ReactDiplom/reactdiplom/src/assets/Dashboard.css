@@ -1,0 +1,218 @@
+/* Dashboard.css */
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #4f46e5;
+    --accent-color: #10b981;
+    --background: #0f172a;
+    --text-light: #f8fafc;
+    --text-dark: #0f172a;
+}
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 240px 1fr 300px;
+    min-height: 100vh;
+    background-color: var(--background);
+    color: var(--text-light);
+}
+
+/* Навигационная панель */
+.sidebar {
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.9);
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+}
+
+.logo span {
+    color: var(--accent-color);
+}
+
+.nav-menu li {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-menu li:hover {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.nav-menu .active {
+    background: var(--primary-color);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+/* Основной контент */
+.main-content {
+    padding: 2rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-light);
+}
+
+.search-bar button {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.user-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.notification {
+    position: relative;
+    cursor: pointer;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-color);
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Карточки игр */
+.game-list {
+    margin-top: 2rem;
+}
+
+.game-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s;
+}
+
+.game-card:hover {
+    transform: translateY(-3px);
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.sport-icon {
+    font-size: 1.8rem;
+}
+
+.players-progress {
+    margin: 1rem 0;
+}
+
+.progress-bar {
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 3px;
+    margin-bottom: 0.5rem;
+}
+
+/* Карта */
+.map-placeholder {
+    height: 400px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+}
+
+/* Боковая панель */
+.right-sidebar {
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.9);
+    border-left: 1px solid rgba(255,255,255,0.1);
+}
+
+.weather-widget {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.create-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.create-button:hover {
+    background: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar,
+    .right-sidebar {
+        display: none;
+    }
+}

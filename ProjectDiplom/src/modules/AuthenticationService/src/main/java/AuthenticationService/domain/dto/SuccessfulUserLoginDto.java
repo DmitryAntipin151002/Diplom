@@ -10,6 +10,7 @@ public record SuccessfulUserLoginDto(
         @Schema(description = "ID пользователя")
         UUID id,
 
+
         @Schema(description = "Телефонный номер пользователя")
         String phoneNumber,
 

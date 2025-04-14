@@ -22,8 +22,6 @@ public record UserDto(
 
 
         @Schema(description = "Номер телефона")
-        @NotBlank(message = "PhoneNumber не может быть пустым")
-        @NotNull(message = "PhoneNumber не может быть пустым")
         String phoneNumber,
 
     
