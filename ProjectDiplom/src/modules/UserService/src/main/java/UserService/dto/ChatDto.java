@@ -1,6 +1,7 @@
 package UserService.dto;
 
-import UserService.model.Chat;
+import UserService.model.ChatType;
+import UserService.model.ChatTypeEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.util.UUID;
 public class ChatDto {
     private UUID id;
     private String name;
-    private Chat.ChatType type;
+    private ChatType type;
     private UUID eventId;
     private LocalDateTime createdAt;
     private List<ParticipantDto> participants;

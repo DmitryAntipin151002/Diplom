@@ -1,8 +1,10 @@
 package UserService.model;
 
+import UserService.config.ChatTypeConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,8 +20,9 @@ public class Chat {
 
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    private ChatType type;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_id", nullable = false)
+    private ChatTypeEntity type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
@@ -34,7 +37,4 @@ public class Chat {
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatParticipant> participants;
 
-    public enum ChatType {
-        PRIVATE, GROUP, EVENT
-    }
 }

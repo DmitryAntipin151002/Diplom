@@ -25,15 +25,27 @@ public class ChatServiceImpl implements ChatService {
     private final ChatParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final ChatTypeRepository chatTypeRepository;
+
 
     @Override
     @Transactional
     public ChatDto createChat(ChatCreateDto createDto) throws UserNotFoundException {
+        // Маппинг основных полей из DTO
         Chat chat = modelMapper.map(createDto, Chat.class);
+
+        // Обработка типа чата через отдельную таблицу
+        ChatTypeEntity chatType = chatTypeRepository.findByName(createDto.getType().toUpperCase())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid chat type: " + createDto.getType()));
+
+        // Установка дополнительных полей
+        chat.setType(chatType);
         chat.setCreatedAt(LocalDateTime.now());
 
+        // Сохранение чата
         Chat savedChat = chatRepository.save(chat);
 
+        // Обработка участников
         for (UUID participantId : createDto.getParticipantIds()) {
             User user = userRepository.findById(participantId)
                     .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + participantId));
@@ -42,10 +54,15 @@ public class ChatServiceImpl implements ChatService {
             participant.setChat(savedChat);
             participant.setUser(user);
             participant.setJoinedAt(LocalDateTime.now());
+            participant.setLastReadAt(LocalDateTime.now());
             participantRepository.save(participant);
         }
 
-        return modelMapper.map(savedChat, ChatDto.class);
+        // Маппинг результата с дополнительными полями
+        ChatDto resultDto = modelMapper.map(savedChat, ChatDto.class);
+        resultDto.setType(ChatType.valueOf(chatType.getName()));
+
+        return resultDto;
     }
 
     @Override

@@ -7,34 +7,49 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.engine.jdbc.env.internal.BlobAndClobCreator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "user_relationships")
 public class UserRelationship {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "related_user_id")
+    @JoinColumn(name = "related_user_id", nullable = false)
     private User relatedUser;
 
-    @Enumerated(EnumType.STRING)
-    private RelationshipType type;
+    @ManyToOne
+    @JoinColumn(name = "type_id", nullable = false)
+    private RelationshipTypeEntity type;
 
-    @Enumerated(EnumType.STRING)
-    private RelationshipStatus status;
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private RelationshipStatusEntity status;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

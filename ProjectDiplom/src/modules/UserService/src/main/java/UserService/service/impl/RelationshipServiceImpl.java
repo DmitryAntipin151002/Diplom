@@ -3,44 +3,44 @@ package UserService.service.impl;
 import UserService.dto.RelationshipDto;
 import UserService.exception.*;
 import UserService.model.*;
-import UserService.repository.UserRelationshipRepository;
-import UserService.repository.UserRepository;
+import UserService.repository.*;
 import UserService.service.RelationshipService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class RelationshipServiceImpl implements RelationshipService {
+
     @Qualifier("userRelationshipRepository")
     private final UserRelationshipRepository relationshipRepository;
     private final UserRepository userRepository;
+    private final RelationshipTypeRepository typeRepository;
+    private final RelationshipStatusRepository statusRepository;
     private final ModelMapper modelMapper;
 
     @Override
-    public List<RelationshipDto> getUserRelationships(UUID userId, RelationshipType type) {
-        return relationshipRepository.findByUserIdAndType(userId, type)
+    public List<RelationshipDto> getUserRelationships(UUID userId, String typeName) {
+        return relationshipRepository.findByUserIdAndType(userId, RelationshipType.valueOf(typeName))
                 .stream()
-                .map(rel -> {
-                    RelationshipDto dto = modelMapper.map(rel, RelationshipDto.class);
-                    dto.setUserId(rel.getUser().getId());
-                    dto.setRelatedUserId(rel.getRelatedUser().getId());
-                    return dto;
-                })
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public RelationshipDto createRelationship(UUID userId, UUID relatedUserId, RelationshipType type) {
+    public RelationshipDto createRelationship(UUID userId, UUID relatedUserId, String typeName) {
+        RelationshipTypeEntity type = typeRepository.findByName(typeName)
+                .orElseThrow(() -> new RelationshipTypeNotFoundException(typeName));
+
         if (userId.equals(relatedUserId)) {
             throw new SelfRelationshipException();
         }
@@ -50,51 +50,52 @@ public class RelationshipServiceImpl implements RelationshipService {
         User relatedUser = userRepository.findById(relatedUserId)
                 .orElseThrow(() -> new UserNotFoundException(relatedUserId));
 
-        Optional<UserRelationship> existing = relationshipRepository
-                .findByUserIdAndRelatedUserIdAndType(userId, relatedUserId, type);
+        Optional<UserRelationship> existing = relationshipRepository.findByUsersAndType(
+                userId, relatedUserId, typeName);
 
         if (existing.isPresent()) {
             throw new RelationshipExistsException();
         }
 
+        RelationshipStatusEntity initialStatus = getInitialStatus(type);
+
         UserRelationship relationship = UserRelationship.builder()
                 .user(user)
                 .relatedUser(relatedUser)
                 .type(type)
-                .status(type == RelationshipType.FRIEND ?
-                        RelationshipStatus.PENDING : RelationshipStatus.ACCEPTED)
+                .status(initialStatus)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         UserRelationship saved = relationshipRepository.save(relationship);
         return toDto(saved);
     }
 
+    private RelationshipStatusEntity getInitialStatus(RelationshipTypeEntity type) {
+        String statusName = "FRIEND".equals(type.getName()) ? "PENDING" : "ACCEPTED";
+        return statusRepository.findByName(statusName)
+                .orElseThrow(() -> new RelationshipStatusNotFoundException(statusName));
+    }
+
     @Override
     @Transactional
-    public RelationshipDto updateRelationshipStatus(Long relationshipId, RelationshipStatus status) {
+    public RelationshipDto updateStatus(Long relationshipId, String statusName) {
+        RelationshipStatusEntity status = statusRepository.findByName(statusName)
+                .orElseThrow(() -> new RelationshipStatusNotFoundException(statusName));
+
         UserRelationship relationship = relationshipRepository.findById(relationshipId)
                 .orElseThrow(() -> new RelationshipNotFoundException(relationshipId));
 
-        if (relationship.getType() != RelationshipType.FRIEND) {
-            throw new IllegalArgumentException("Only friend relationships can be updated");
+        if (!"FRIEND".equals(relationship.getType().getName())) {
+            throw new InvalidRelationshipTypeException("Status can only be updated for FRIEND relationships");
         }
 
         relationship.setStatus(status);
         relationship.setUpdatedAt(LocalDateTime.now());
 
-        UserRelationship updated = relationshipRepository.save(relationship);
-        return toDto(updated);
+        return toDto(relationshipRepository.save(relationship));
     }
 
-    private RelationshipDto toDto(UserRelationship relationship) {
-        RelationshipDto dto = modelMapper.map(relationship, RelationshipDto.class);
-        dto.setUserId(relationship.getUser().getId());
-        dto.setRelatedUserId(relationship.getRelatedUser().getId());
-        // status уже правильно маппится через modelMapper
-        return dto;
-    }
-
-    // В реализацию RelationshipServiceImpl
     @Override
     @Transactional
     public void deleteRelationship(Long relationshipId) {
@@ -102,5 +103,12 @@ public class RelationshipServiceImpl implements RelationshipService {
             throw new RelationshipNotFoundException(relationshipId);
         }
         relationshipRepository.deleteById(relationshipId);
+    }
+
+    private RelationshipDto toDto(UserRelationship relationship) {
+        RelationshipDto dto = modelMapper.map(relationship, RelationshipDto.class);
+        dto.setType(relationship.getType().getName());
+        dto.setStatus(relationship.getStatus().getName());
+        return dto;
     }
 }

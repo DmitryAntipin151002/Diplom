@@ -3,6 +3,7 @@ package UserService.controller;
 import UserService.dto.*;
 import UserService.exception.*;
 import UserService.service.ChatService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -25,13 +27,19 @@ public class ChatController {
      * @return созданный чат или 404 если пользователь не найден
      */
     @PostMapping
-    public ResponseEntity<ChatDto> createChat(@RequestBody ChatCreateDto createDto) {
+    public ResponseEntity<ChatDto> createChat(@Valid @RequestBody ChatCreateDto createDto) {
         try {
-            ChatDto chatDto = chatService.createChat(createDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(chatDto);
+            if (!isValidChatType(createDto.getType())) {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(chatService.createChat(createDto));
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    private boolean isValidChatType(String type) {
+        return Set.of("PRIVATE", "GROUP", "EVENT").contains(type.toUpperCase());
     }
 
     /**

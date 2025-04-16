@@ -12,7 +12,7 @@ public class RelationshipDto {
     private UUID userId;
     private UUID relatedUserId;
     private String type;
-    private RelationshipStatus status;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

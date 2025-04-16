@@ -89,4 +89,9 @@ public class UserRelationshipRepositoryImpl implements UserRelationshipRepositor
     public void deleteById(Long relationshipId) {
         jpaRepository.deleteById(relationshipId);
     }
+
+    @Override
+    public Optional<UserRelationship> findByUsersAndType(UUID userId, UUID relatedUserId, String typeName) {
+        return Optional.empty();
+    }
 }

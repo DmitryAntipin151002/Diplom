@@ -8,14 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RelationshipService {
-    List<RelationshipDto> getUserRelationships(UUID userId, RelationshipType type);
+    RelationshipDto createRelationship(UUID userId, UUID relatedUserId, String typeName);
 
-    @Transactional
-    RelationshipDto createRelationship(UUID userId, UUID relatedUserId, RelationshipType type);
+    List<RelationshipDto> getUserRelationships(UUID userId, String typeName);
 
-    @Transactional
-    RelationshipDto updateRelationshipStatus(Long relationshipId, RelationshipStatus status);
+    RelationshipDto updateStatus(Long relationshipId, String statusName);
 
-    @Transactional
     void deleteRelationship(Long relationshipId);
 }

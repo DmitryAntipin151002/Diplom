@@ -27,7 +27,7 @@ public class RelationshipController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<RelationshipDto>> getUserRelationships(
             @PathVariable UUID userId,
-            @RequestParam RelationshipType type) {
+            @RequestParam String type) { // Изменили на String
         List<RelationshipDto> relationships = relationshipService.getUserRelationships(userId, type);
         return ResponseEntity.ok(relationships);
     }
@@ -43,7 +43,7 @@ public class RelationshipController {
     public ResponseEntity<RelationshipDto> createRelationship(
             @RequestParam UUID userId,
             @RequestParam UUID relatedUserId,
-            @RequestParam RelationshipType type) {
+            @RequestParam String type) { // Изменили на String
         RelationshipDto relationship = relationshipService.createRelationship(userId, relatedUserId, type);
         return ResponseEntity.status(HttpStatus.CREATED).body(relationship);
     }
@@ -57,8 +57,8 @@ public class RelationshipController {
     @PatchMapping("/{relationshipId}/status")
     public ResponseEntity<RelationshipDto> updateRelationshipStatus(
             @PathVariable Long relationshipId,
-            @RequestParam RelationshipStatus status) {
-        RelationshipDto updated = relationshipService.updateRelationshipStatus(relationshipId, status);
+            @RequestParam String status) { // Изменили на String
+        RelationshipDto updated = relationshipService.updateStatus(relationshipId, status);
         return ResponseEntity.ok(updated);
     }
 
@@ -72,9 +72,9 @@ public class RelationshipController {
             @PathVariable UUID userId) {
         List<RelationshipDto> requests = relationshipService.getUserRelationships(
                         userId,
-                        RelationshipType.FRIEND)
+                        "FRIEND")  // Используем строковый параметр вместо enum
                 .stream()
-                .filter(r -> r.getStatus() == RelationshipStatus.PENDING)
+                .filter(r -> "PENDING".equals(r.getStatus()))  // Сравниваем строки
                 .toList();
         return ResponseEntity.ok(requests);
     }
