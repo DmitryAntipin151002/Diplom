@@ -37,5 +37,7 @@ public class UserPhoto {
 
     @Column(name = "description")
     private String description;
+
+
 }
 

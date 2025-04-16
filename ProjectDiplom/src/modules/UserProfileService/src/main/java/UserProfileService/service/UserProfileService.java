@@ -1,77 +1,56 @@
 package UserProfileService.service;
 
-
+import UserProfileService.dto.UserProfileDTO;
+import UserProfileService.exception.ProfileNotFoundException;
 import UserProfileService.model.UserProfile;
-import UserProfileService.model.UserPhoto;
-import UserProfileService.model.UserActivity;
 import UserProfileService.repository.UserProfileRepository;
-import UserProfileService.repository.UserPhotoRepository;
-import UserProfileService.repository.UserActivityRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserProfileService {
 
-    @Autowired
-    private UserProfileRepository userProfileRepository;
+    private final UserProfileRepository userProfileRepository;
 
-    @Autowired
-    private UserPhotoRepository userPhotoRepository;
-
-    @Autowired
-    private UserActivityRepository userActivityRepository;
-
-    // Создание профиля пользователя
-    public UserProfile createProfile(UserProfile userProfile) {
-        userProfile.setCreatedAt(java.time.LocalDateTime.now());
-        userProfile.setUpdatedAt(userProfile.getCreatedAt());
-        return userProfileRepository.save(userProfile);
+    @Transactional(readOnly = true)
+    public UserProfileDTO getProfile(UUID userId) {
+        UserProfile profile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new ProfileNotFoundException(userId));
+        return convertToDTO(profile);
     }
 
-    // Получение профиля пользователя по ID
-    public Optional<UserProfile> getProfileByUserId(UUID userId) {
-        return userProfileRepository.findByUserId(userId);
+    @Transactional
+    public UserProfileDTO updateProfile(UUID userId, UserProfileDTO dto) {
+        UserProfile profile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new ProfileNotFoundException(userId));
+
+        profile.setAvatarUrl(dto.getAvatarUrl());
+        profile.setBio(dto.getBio());
+        profile.setDateOfBirth(dto.getDateOfBirth());
+        profile.setGender(dto.getGender());
+        profile.setLocation(dto.getLocation());
+        profile.setSportType(dto.getSportType());
+        profile.setFitnessLevel(dto.getFitnessLevel());
+        profile.setGoals(dto.getGoals());
+        profile.setAchievements(dto.getAchievements());
+        profile.setPersonalRecords(dto.getPersonalRecords());
+
+        return convertToDTO(userProfileRepository.save(profile));
     }
 
-    // Редактирование профиля пользователя
-    public UserProfile updateProfile(UUID userId, UserProfile updatedProfile) {
-        UserProfile existingProfile = userProfileRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        existingProfile.setBio(updatedProfile.getBio());
-        existingProfile.setAvatarUrl(updatedProfile.getAvatarUrl());
-        existingProfile.setLocation(updatedProfile.getLocation());
-        existingProfile.setSportType(updatedProfile.getSportType());
-        existingProfile.setFitnessLevel(updatedProfile.getFitnessLevel());
-        existingProfile.setUpdatedAt(java.time.LocalDateTime.now());
-        return userProfileRepository.save(existingProfile);
+    @Transactional(readOnly = true)
+    public List<UserProfileDTO> searchUsers(String searchTerm) {
+        return userProfileRepository.findByLocationContainingIgnoreCase(searchTerm).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    // Загрузка аватарки
-    public UserPhoto uploadAvatar(UUID userId, String photoUrl) {
-        UserProfile userProfile = userProfileRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        UserPhoto userPhoto = new UserPhoto();
-        userPhoto.setUserProfile(userProfile);
-        userPhoto.setPhotoUrl(photoUrl);
-        userPhoto.setIsMain(true);
-        userPhoto.setUploadedAt(java.time.LocalDateTime.now());
-        return userPhotoRepository.save(userPhoto);
-    }
-
-    // Добавление активности пользователя
-    public UserActivity addActivity(UUID userId, UserActivity userActivity) {
-        UserProfile userProfile = userProfileRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        userActivity.setUserProfile(userProfile);
-        userActivity.setActivityDate(java.time.LocalDateTime.now());
-        return userActivityRepository.save(userActivity);
-    }
-
-    // Получение всех активностей пользователя
-    public List<UserActivity> getUserActivities(UUID userId) {
-        return userActivityRepository.findByUserProfile_UserId(userId);
+    private UserProfileDTO convertToDTO(UserProfile profile) {
+        // Реализация маппинга с использованием ModelMapper или вручную
     }
 }
-

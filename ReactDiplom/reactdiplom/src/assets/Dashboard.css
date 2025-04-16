@@ -206,16 +206,27 @@
     right: 0;
     top: 50px;
     background: var(--card-bg);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 200px;
-    overflow: hidden;
-    z-index: 100;
     border: 1px solid var(--border);
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    pointer-events: none;
+    border-radius: 0.5rem;
+    min-width: 200px;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.profile-dropdown.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.nav-menu li {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.nav-menu li:hover {
+    background-color: rgba(99, 102, 241, 0.1);
 }
 
 .dropdown-item {

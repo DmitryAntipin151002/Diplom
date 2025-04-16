@@ -27,6 +27,7 @@
 		<module>src/modules/AuthenticationService</module>
 		<module>src/modules/UserProfileService</module>
 		<module>src/modules/EventService</module>
+		<module>src/modules/UserService</module>
 	</modules>
 
 	<properties>

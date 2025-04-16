@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import './../assets/Dashboard.css';
 
 const Dashboard = () => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const navigate = useNavigate();
+    const profileRef = useRef(null);
+    const userId = localStorage.getItem('userId');
 
     const games = [
         { id: 1, title: "Футбол в парке", location: "Центральный парк", date: "Сегодня 18:00", players: 12, maxPlayers: 16, sport: '⚽' },
@@ -12,9 +14,26 @@ const Dashboard = () => {
         { id: 3, title: "Баскетбол под открытым небом", location: "Школьная площадка", date: "20.07 17:30", players: 5, maxPlayers: 10, sport: '🏀' }
     ];
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setShowProfileMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const handleLogout = () => {
         localStorage.removeItem('isFirstEnterToken');
         navigate('/login');
+    };
+
+    const handleNavigation = (path) => {
+        navigate(path);
     };
 
     return (
@@ -23,23 +42,23 @@ const Dashboard = () => {
             <nav className="sidebar">
                 <div className="logo">Game<span>Hub</span></div>
                 <ul className="nav-menu">
-                    <li className="active">
+                    <li className="active" onClick={() => handleNavigation('/dashboard')}>
                         <span className="nav-icon">🏠</span>
                         <span className="nav-text">Главная</span>
                     </li>
-                    <li>
+                    <li onClick={() => handleNavigation('/my-games')}>
                         <span className="nav-icon">🎯</span>
                         <span className="nav-text">Мои игры</span>
                     </li>
-                    <li>
+                    <li onClick={() => handleNavigation('/calendar')}>
                         <span className="nav-icon">🗓️</span>
                         <span className="nav-text">Календарь</span>
                     </li>
-                    <li>
+                    <li onClick={() => handleNavigation('/communities')}>
                         <span className="nav-icon">👥</span>
                         <span className="nav-text">Сообщества</span>
                     </li>
-                    <li>
+                    <li onClick={() => handleNavigation('/settings')}>
                         <span className="nav-icon">⚙️</span>
                         <span className="nav-text">Настройки</span>
                     </li>
@@ -68,8 +87,8 @@ const Dashboard = () => {
                         </div>
                         <div
                             className="profile-avatar-container"
-                            onMouseEnter={() => setShowProfileMenu(true)}
-                            onMouseLeave={() => setShowProfileMenu(false)}
+                            ref={profileRef}
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
                         >
                             <img
                                 src="user-avatar.jpg"
@@ -78,11 +97,14 @@ const Dashboard = () => {
                             />
                             {showProfileMenu && (
                                 <div className="profile-dropdown">
-                                    <div className="dropdown-item">
+                                    <div
+                                        className="dropdown-item"
+                                        onClick={() => handleNavigation(`/profile/${userId}`)} // Исправленный путь
+                                    >
                                         <span className="dropdown-icon">👤</span>
                                         <span>Мой профиль</span>
                                     </div>
-                                    <div className="dropdown-item">
+                                    <div className="dropdown-item" onClick={() => handleNavigation('/settings')}>
                                         <span className="dropdown-icon">⚙️</span>
                                         <span>Настройки</span>
                                     </div>

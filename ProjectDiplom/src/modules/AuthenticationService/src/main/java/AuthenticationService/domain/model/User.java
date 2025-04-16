@@ -31,7 +31,7 @@ public class User {
     @Size(max = 12)
     private String phoneNumber;
 
-    @Column(name = "ENCRYPTED_PASSWORD", columnDefinition = "bpchar (Types#CHAR)")
+    @Column(name = "password", columnDefinition = "bpchar (Types#CHAR)")
     @Size(max = 60, min = 60)
     private String encryptedPassword;
 
@@ -46,7 +46,7 @@ public class User {
     private LocalDate endDate;
 
     @ManyToOne
-    @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")
+    @JoinColumn(name = "role", referencedColumnName = "ID")
     private Role role;
 
 

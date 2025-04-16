@@ -19,7 +19,9 @@ const LoginPage = () => {
         try {
             // 1. Делаем запрос через AuthService
             const response = await AuthService.login({ email, password });
-
+            // Сохраняем данные в localStorage
+            localStorage.setItem('isFirstEnterToken', response.data.preAuthorizationToken);
+            localStorage.setItem('userId', response.data.id); // Добавляем сохранение userId
             // 2. Логируем полный ответ для отладки
             console.log('Full response:', response);
             console.log('Response data:', response.data);
