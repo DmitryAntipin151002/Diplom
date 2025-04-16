@@ -58,6 +58,10 @@ const Dashboard = () => {
                         <span className="nav-icon">👥</span>
                         <span className="nav-text">Сообщества</span>
                     </li>
+                    <li onClick={() => handleNavigation('/messenger')}>  {/* Добавлен переход к мессенджеру */}
+                        <span className="nav-icon">💬</span>
+                        <span className="nav-text">Мессенджер</span>
+                    </li>
                     <li onClick={() => handleNavigation('/settings')}>
                         <span className="nav-icon">⚙️</span>
                         <span className="nav-text">Настройки</span>
@@ -81,6 +85,13 @@ const Dashboard = () => {
                         </button>
                     </div>
                     <div className="user-profile-container">
+                        <div
+                            className="notification-bell messenger-icon"
+                            onClick={() => handleNavigation('/messenger')}  // Добавлен переход к мессенджеру
+                        >
+                            <span className="notification-icon">💬</span>
+                            <div className="badge">3</div>
+                        </div>
                         <div className="notification-bell">
                             <span className="notification-icon">🔔</span>
                             <div className="badge">3</div>
@@ -99,7 +110,7 @@ const Dashboard = () => {
                                 <div className="profile-dropdown">
                                     <div
                                         className="dropdown-item"
-                                        onClick={() => handleNavigation(`/profile/${userId}`)} // Исправленный путь
+                                        onClick={() => handleNavigation(`/profile/${userId}`)}
                                     >
                                         <span className="dropdown-icon">👤</span>
                                         <span>Мой профиль</span>
@@ -225,7 +236,12 @@ const Dashboard = () => {
                                     {name.charAt(0)}
                                 </div>
                                 <span className="friend-name">{name}</span>
-                                <button className="invite-btn">Пригласить</button>
+                                <button
+                                    className="invite-btn"
+                                    onClick={() => handleNavigation('/messenger')}  // Добавлен переход к мессенджеру
+                                >
+                                    Написать
+                                </button>
                             </div>
                         ))}
                     </div>

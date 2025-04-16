@@ -8,8 +8,9 @@ import ErrorPage from "./components/AuthS_Component/ErrorPage";
 import RecoveryRequestPage from "./components/AuthS_Component/RecoveryRequestPage";
 import RecoveryPasswordPage from "./components/AuthS_Component/RecoveryPasswordPage";
 import Dashboard from "./components/Dashboard";
-import ProfilePage from "./components/ProfilePage";
+import ProfilePage from "./components/Profile_Componemt/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 
 // Заглушки для страниц
 

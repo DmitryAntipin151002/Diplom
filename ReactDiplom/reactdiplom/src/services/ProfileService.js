@@ -1,62 +1,49 @@
-// ProfileService.js (обновленная версия)
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083/api';
 
 const getAuthHeader = () => {
-    const token = localStorage.getItem('isFirstEnterToken');
-    return { Authorization: `Bearer ${token}` };
+    const token = localStorage.getItem('token') || localStorage.getItem('isFirstEnterToken');
+    return {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    };
 };
 
-const handleResponse = (response) => {
-    if (response.status >= 200 && response.status < 300) {
+export const getProfile = async (userId) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/profiles/${userId}`, getAuthHeader());
         return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Не удалось загрузить профиль');
     }
-    throw new Error(response.statusText);
 };
 
-const handleError = (error) => {
-    if (error.response) {
-        throw new Error(error.response.data.message || error.message);
-    }
-    throw new Error(error.message || 'Ошибка подключения');
-};
-
-const ProfileService = {
-    getProfile: (userId) => axios.get(`${API_BASE_URL}/user-profiles/${userId}`, {
-        headers: getAuthHeader()
-    }).then(handleResponse).catch(handleError),
-
-    updateProfile: (userId, data) => axios.put(
-        `${API_BASE_URL}/user-profiles/${userId}`,
-        data,
-        { headers: getAuthHeader() }
-    ).then(handleResponse).catch(handleError),
-
-    uploadAvatar: (userId, file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        return axios.post(
-            `${API_BASE_URL}/user-profiles/${userId}/avatar`,
-            formData,
+export const updateProfile = async (userId, data) => {
+    try {
+        const response = await axios.put(
+            `${API_BASE_URL}/profiles/${userId}`,
             {
-                headers: {
-                    ...getAuthHeader(),
-                    'Content-Type': 'multipart/form-data'
-                }
-            }
-        ).then(handleResponse).catch(handleError);
-    },
-
-    getUserActivities: (userId) => axios.get(
-        `${API_BASE_URL}/user-profiles/${userId}/activities`,
-        { headers: getAuthHeader() }
-    ).then(handleResponse).catch(handleError),
-
-    getUserPhotos: (userId) => axios.get(
-        `${API_BASE_URL}/user-profiles/${userId}/photos`,
-        { headers: getAuthHeader() }
-    ).then(handleResponse).catch(handleError)
+                ...data,
+                sportType: data.sportType // Явно указываем поле
+            },
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Не удалось обновить профиль');
+    }
 };
 
-export default ProfileService;
+export const getUserStats = async (userId) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/profiles/${userId}/stats`,
+            getAuthHeader()
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Не удалось загрузить статистику');
+    }
+};

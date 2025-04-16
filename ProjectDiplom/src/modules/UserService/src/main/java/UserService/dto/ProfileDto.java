@@ -11,6 +11,7 @@ public class ProfileDto {
     private String firstName;
     private String lastName;
     private String bio;
+    private String sportType;
     private String location;
     private String website;
     private String avatarUrl;

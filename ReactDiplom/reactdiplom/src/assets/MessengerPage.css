@@ -1,0 +1,63 @@
+.messenger-container {
+    background: var(--main-bg);
+    padding: 2rem;
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+.messenger-content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+    height: 100%;
+    background: var(--dark-purple);
+    border-radius: 15px;
+    border: var(--cyber-border);
+    overflow: hidden;
+}
+
+/* Стили для списка чатов */
+.chat-list {
+    border-right: var(--cyber-border);
+    overflow-y: auto;
+}
+
+/* Стили для окна чата */
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.message-input {
+    display: flex;
+    padding: 1rem;
+    border-top: var(--cyber-border);
+}
+
+.message-input input {
+    flex-grow: 1;
+    background: #1e1a36;
+    border: 1px solid #342f4d;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 5px;
+}
+
+/* Анимации сообщений */
+.message-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+.message-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}

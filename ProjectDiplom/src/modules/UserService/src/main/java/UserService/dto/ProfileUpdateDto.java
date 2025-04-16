@@ -10,4 +10,5 @@ public class ProfileUpdateDto {
     private String bio;
     private String location;
     private String website;
+    private String sportType;
 }

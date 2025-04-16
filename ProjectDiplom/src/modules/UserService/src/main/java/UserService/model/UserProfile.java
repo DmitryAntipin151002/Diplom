@@ -24,6 +24,7 @@ public class UserProfile {
     private String location;
     private String website;
     private String avatarUrl;
+    @Column(name = "sport_type")
     private String sportType;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;

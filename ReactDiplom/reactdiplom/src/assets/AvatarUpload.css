@@ -1,0 +1,165 @@
+/* AvatarUpload.css */
+.avatar-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.avatar-preview-wrapper {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #a239ff;
+    box-shadow: 0 0 20px rgba(112, 38, 224, 0.3);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.avatar-preview:hover {
+    box-shadow: 0 0 30px rgba(162, 57, 255, 0.5);
+}
+
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.upload-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #7026e0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(112, 38, 224, 0.4);
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.upload-indicator:hover {
+    background: #a239ff;
+    transform: scale(1.1);
+}
+
+.upload-indicator svg {
+    width: 24px;
+    height: 24px;
+}
+
+.uploading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 22, 45, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    backdrop-filter: blur(2px);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(162, 57, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #a239ff;
+    animation: spin 1s linear infinite;
+}
+
+.upload-btn {
+    background: linear-gradient(135deg, #7026e0 0%, #a239ff 100%);
+    color: white;
+    padding: 0.8rem 1.8rem;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(112, 38, 224, 0.3);
+    border: none;
+    overflow: hidden;
+    position: relative;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(112, 38, 224, 0.4);
+}
+
+.upload-btn:active {
+    transform: translateY(0);
+}
+
+.upload-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+    );
+    transition: 0.5s;
+}
+
+.upload-btn:hover::before {
+    left: 100%;
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.icon-upload {
+    font-size: 1.2rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .avatar-preview-wrapper {
+        width: 150px;
+        height: 150px;
+    }
+
+    .upload-btn {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}

@@ -3,15 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@stomp/stompjs": "^7.1.1",
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.9",
     "cra-template": "1.2.0",
+    "framer-motion": "^12.7.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.1.5",
     "react-scripts": "^5.0.1",
     "reactdiplom": "file:",
+    "sockjs-client": "^1.6.1",
     "web-vitals": "^4.2.4"
   },
   "scripts": {
