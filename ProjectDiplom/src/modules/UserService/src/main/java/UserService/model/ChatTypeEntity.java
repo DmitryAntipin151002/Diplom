@@ -1,10 +1,14 @@
 package UserService.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "chat_types")
 public class ChatTypeEntity {
     @Id

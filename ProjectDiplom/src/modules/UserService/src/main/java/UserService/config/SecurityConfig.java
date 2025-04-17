@@ -25,7 +25,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Отключаем CSRF
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // Разрешаем все запросы
+                        .requestMatchers("/**","/ws-messenger/**").permitAll()
+
                 );
 
         return http.build();

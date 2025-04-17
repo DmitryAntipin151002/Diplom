@@ -24,4 +24,6 @@ public class ChatParticipant {
 
     private LocalDateTime joinedAt;
     private LocalDateTime lastReadAt;
+    @Column(nullable = false)
+    private boolean isAdmin = false;
 }

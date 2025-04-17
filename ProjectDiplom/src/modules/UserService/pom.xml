@@ -83,6 +83,10 @@
 			<version>2.20.0</version> <!-- или актуальная версия -->
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 
 		<!-- Security -->
 		<dependency>

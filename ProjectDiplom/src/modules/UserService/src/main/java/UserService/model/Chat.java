@@ -3,10 +3,12 @@ package UserService.model;
 import UserService.config.ChatTypeConverter;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,10 +33,18 @@ public class Chat {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+
+    @PostLoad
+    private void init() {
+        if (messages == null) messages = new ArrayList<>();
+        if (participants == null) participants = new ArrayList<>();
+    }
+
+    @ToString.Exclude
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> messages;
+    private List<Message> messages = new ArrayList<>();
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatParticipant> participants;
+    private List<ChatParticipant> participants = new ArrayList<>();
 
 }

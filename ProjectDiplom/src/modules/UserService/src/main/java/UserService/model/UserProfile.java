@@ -2,6 +2,7 @@ package UserService.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,6 +16,7 @@ public class UserProfile {
 
     @OneToOne
     @MapsId // Использует userId как ID и как внешний ключ к User
+    @ToString.Exclude
     @JoinColumn(name = "user_id")
     private User user;
 
