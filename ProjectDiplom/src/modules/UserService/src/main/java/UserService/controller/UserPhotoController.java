@@ -1,15 +1,22 @@
 package UserService.controller;
 
+import UserService.dto.PhotoResponseDto;
 import UserService.model.UserPhoto;
 import UserService.service.UserPhotoService;
+import UserService.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/users/{userId}/photos")
@@ -17,42 +24,70 @@ import java.util.UUID;
 public class UserPhotoController {
 
     private final UserPhotoService userPhotoService;
+    private final FileStorageService fileStorageService;
 
     /**
-     * Загрузить новую фотографию
-     * @param userId ID пользователя
-     * @param photoUrl URL фотографии
-     * @param description Описание фотографии
-     * @return Загруженная фотография
+     * Загрузить фотографию по URL (если нужно сохранить эту функциональность)
      */
     @PostMapping
-    public ResponseEntity<UserPhoto> uploadPhoto(
+    public ResponseEntity<UserPhoto> uploadPhotoByUrl(
             @PathVariable UUID userId,
             @RequestParam String photoUrl,
             @RequestParam(required = false) String description) {
-        UserPhoto photo = userPhotoService.uploadPhoto(userId, photoUrl, description);
+        UserPhoto photo = userPhotoService.uploadPhotoByUrl(userId, photoUrl, description);
         return ResponseEntity.status(HttpStatus.CREATED).body(photo);
     }
 
     /**
+     * Загрузить фотографию с файлом
+     */
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PhotoResponseDto> uploadPhotoFile(
+            @PathVariable UUID userId,
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(required = false) String description) {
+
+        try {
+            UserPhoto photo = userPhotoService.uploadPhotoFile(userId, file, description);
+
+            PhotoResponseDto response = PhotoResponseDto.builder()
+                    .id(photo.getId())
+                    .photoUrl(photo.getPhotoUrl())
+                    .description(photo.getDescription())
+                    .isProfilePhoto(photo.isProfilePhoto())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
      * Удалить фотографию
-     * @param userId ID пользователя
-     * @param photoId ID фотографии
-     * @return Пустой ответ со статусом 204
      */
     @DeleteMapping("/{photoId}")
     public ResponseEntity<Void> deletePhoto(
             @PathVariable UUID userId,
             @PathVariable UUID photoId) {
+
+        // 1. Получаем фото для проверки прав доступа
+        UserPhoto photo = userPhotoService.getPhoto(userId, photoId);
+
+        // 2. Удаляем файл если он локальный
+        if (photo.getPhotoUrl().startsWith("/api/files/")) {
+            String filePath = photo.getPhotoUrl().replace("/api/files/" + userId + "/", "");
+            fileStorageService.delete(userId + "/" + filePath);
+        }
+
+        // 3. Удаляем запись из БД
         userPhotoService.deletePhoto(userId, photoId);
+
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Установить фотографию как профильную
-     * @param userId ID пользователя
-     * @param photoId ID фотографии
-     * @return Обновленная фотография профиля
+     * Установить как профильную
      */
     @PatchMapping("/{photoId}/profile")
     public ResponseEntity<UserPhoto> setAsProfilePhoto(
@@ -63,9 +98,7 @@ public class UserPhotoController {
     }
 
     /**
-     * Получить все фотографии пользователя
-     * @param userId ID пользователя
-     * @return Список фотографий пользователя
+     * Получить все фотографии
      */
     @GetMapping
     public ResponseEntity<List<UserPhoto>> getUserPhotos(@PathVariable UUID userId) {
@@ -74,33 +107,11 @@ public class UserPhotoController {
     }
 
     /**
-     * Получить профильную фотографию пользователя
-     * @param userId ID пользователя
-     * @return Профильная фотография
+     * Получить профильную фотографию
      */
     @GetMapping("/profile")
     public ResponseEntity<UserPhoto> getProfilePhoto(@PathVariable UUID userId) {
         UserPhoto photo = userPhotoService.getProfilePhoto(userId);
         return ResponseEntity.ok(photo);
-    }
-
-    /**
-     * Загрузить фотографию с файлом (альтернативный вариант)
-     * @param userId ID пользователя
-     * @param file Файл фотографии
-     * @param description Описание фотографии
-     * @return Загруженная фотография
-     */
-    @PostMapping("/upload")
-    public ResponseEntity<UserPhoto> uploadPhotoFile(
-            @PathVariable UUID userId,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(required = false) String description) {
-        // Здесь должна быть логика сохранения файла и получения URL
-        // Например:
-        // String photoUrl = fileStorageService.store(file);
-        // UserPhoto photo = userPhotoService.uploadPhoto(userId, photoUrl, description);
-        // return ResponseEntity.status(HttpStatus.CREATED).body(photo);
-        throw new UnsupportedOperationException("File upload not implemented yet");
     }
 }

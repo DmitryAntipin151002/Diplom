@@ -14,8 +14,7 @@ public interface ProfileService {
     ProfileDto updateProfile(UUID userId, ProfileUpdateDto updateDto);
 
     @Transactional
-    void updateAvatar(UUID userId, MultipartFile avatarFile);
-
+    void updateAvatarPath(UUID userId, String filePath);
     UserStatsDto getUserStats(UUID userId);
     ProfileDto getOrCreateProfile(UUID userId);
 }

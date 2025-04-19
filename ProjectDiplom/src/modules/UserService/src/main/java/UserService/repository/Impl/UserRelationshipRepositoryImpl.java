@@ -2,6 +2,7 @@ package UserService.repository.Impl;
 
 import UserService.model.RelationshipStatus;
 import UserService.model.RelationshipType;
+import UserService.model.RelationshipTypeEntity;
 import UserService.model.UserRelationship;
 import UserService.repository.UserRelationshipJpaRepository;
 import UserService.repository.UserRelationshipRepository;
@@ -54,7 +55,7 @@ public class UserRelationshipRepositoryImpl implements UserRelationshipRepositor
     }
 
     @Override
-    public List<UserRelationship> findByUserIdAndType(UUID userId, RelationshipType type) {
+    public List<UserRelationship> findByUserIdAndType(UUID userId, RelationshipTypeEntity type) {
         return jpaRepository.findByUserIdAndType(userId, type);
     }
 

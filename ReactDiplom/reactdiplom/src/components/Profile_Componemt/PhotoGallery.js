@@ -1,208 +1,111 @@
-// PhotoGallery.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getUserPhotos, deletePhoto, setProfilePhoto, uploadPhoto } from '../../services/userPhotos';
 import './../../assets/PhotoGallery.css';
 
-const PhotoGallery = ({ userId }) => {
-    const [photos, setPhotos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+const PhotoGallery = ({ photos = [], onUpload, onDelete, onSetProfile }) => {
     const [selectedPhoto, setSelectedPhoto] = useState(null);
-    const [showUpload, setShowUpload] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
-    useEffect(() => {
-        const fetchPhotos = async () => {
-            try {
-                const response = await getUserPhotos(userId);
-                setPhotos(response.data);
-            } catch (err) {
-                setError(err.response?.data?.message || 'Ошибка загрузки фотографий');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPhotos();
-    }, [userId]);
-
-    const handleSetProfile = async (photoId) => {
-        try {
-            await setProfilePhoto(userId, photoId);
-            const response = await getUserPhotos(userId);
-            setPhotos(response.data);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Ошибка обновления профильного фото');
-        }
-    };
-
-    const handleDelete = async (photoId) => {
-        try {
-            await deletePhoto(userId, photoId);
-            setPhotos(photos.filter(photo => photo.id !== photoId));
-        } catch (err) {
-            setError(err.response?.data?.message || 'Ошибка удаления фотографии');
-        }
-    };
-
-    const handlePhotoUpload = async (e) => {
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         try {
-            setLoading(true);
-            await uploadPhoto(userId, file);
-            const response = await getUserPhotos(userId);
-            setPhotos(response.data);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Ошибка загрузки фотографии');
+            setIsUploading(true);
+            await onUpload(file);
+        } catch (error) {
+            console.error('Upload error:', error);
         } finally {
-            setLoading(false);
-            setShowUpload(false);
+            setIsUploading(false);
         }
     };
 
-    if (loading) return (
-        <div className="loading-photos">
-            <div className="spinner"></div>
-            <p>Загрузка фотографий...</p>
-        </div>
-    );
-
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="photo-gallery"
-        >
+        <div className="photo-gallery">
             <div className="gallery-header">
-                <h2>Фотогалерея</h2>
-                <button
-                    className="add-photo-btn"
-                    onClick={() => setShowUpload(!showUpload)}
-                >
-                    <i className="icon-plus"></i> Добавить фото
-                </button>
+                <h3>Фотогалерея</h3>
+                <label className="upload-button">
+                    {isUploading ? 'Загрузка...' : 'Добавить фото'}
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        disabled={isUploading}
+                        style={{ display: 'none' }}
+                    />
+                </label>
             </div>
 
-            {showUpload && (
-                <div className="upload-photo-container">
-                    <label className="file-upload-label">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePhotoUpload}
-                            style={{ display: 'none' }}
-                        />
-                        Выберите фото для загрузки
-                    </label>
-                </div>
-            )}
-
-            {error && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="gallery-error"
-                >
-                    {error}
-                </motion.div>
-            )}
-
             {photos.length === 0 ? (
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="no-photos"
-                >
-                    Нет загруженных фотографий
-                </motion.p>
+                <p>Нет фотографий</p>
             ) : (
                 <div className="photos-grid">
-                    <AnimatePresence>
-                        {photos.map(photo => (
-                            <motion.div
-                                key={photo.id}
-                                layout
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className={`photo-item ${photo.isProfilePhoto ? 'profile-photo' : ''}`}
-                                onClick={() => setSelectedPhoto(photo)}
-                            >
-                                <motion.img
-                                    src={photo.photoUrl}
-                                    alt={photo.description || 'Фото пользователя'}
-                                    whileHover={{ scale: 1.03 }}
-                                />
-                                <div className="photo-actions">
-                                    {!photo.isProfilePhoto && (
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSetProfile(photo.id);
-                                            }}
-                                            className="action-btn"
-                                        >
-                                            Сделать профильной
-                                        </motion.button>
-                                    )}
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(photo.id);
-                                        }}
-                                        className="action-btn delete"
-                                    >
-                                        Удалить
-                                    </motion.button>
-                                </div>
-                                {photo.description && (
-                                    <p className="photo-description">{photo.description}</p>
-                                )}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                    {photos.map(photo => (
+                        <PhotoItem
+                            key={photo.id}
+                            photo={photo}
+                            onSelect={setSelectedPhoto}
+                            onDelete={onDelete}
+                            onSetProfile={onSetProfile}
+                        />
+                    ))}
                 </div>
             )}
 
-            <AnimatePresence>
-                {selectedPhoto && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="photo-modal"
-                        onClick={() => setSelectedPhoto(null)}
-                    >
-                        <motion.div
-                            className="modal-content"
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <img src={selectedPhoto.photoUrl} alt="Просмотр фото" />
-                            <button
-                                className="close-modal"
-                                onClick={() => setSelectedPhoto(null)}
-                            >
-                                ×
-                            </button>
-                            {selectedPhoto.description && (
-                                <p className="modal-description">{selectedPhoto.description}</p>
-                            )}
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
+            <PhotoModal
+                photo={selectedPhoto}
+                onClose={() => setSelectedPhoto(null)}
+            />
+        </div>
     );
 };
+
+const PhotoItem = ({ photo, onSelect, onDelete, onSetProfile }) => (
+    <motion.div
+        className={`photo-item ${photo.isProfilePhoto ? 'profile-photo' : ''}`}
+        onClick={() => onSelect(photo)}
+        whileHover={{ scale: 1.03 }}
+    >
+        <img
+            src={photo.photoUrl}
+            alt={photo.description || 'Фото'}
+            onError={(e) => {
+                e.target.src = '/placeholder.jpg';
+            }}
+        />
+        <div className="photo-actions">
+            {!photo.isProfilePhoto && (
+                <button onClick={(e) => {
+                    e.stopPropagation();
+                    onSetProfile(photo.id);
+                }}>
+                    Сделать профильной
+                </button>
+            )}
+            <button
+                className="delete"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(photo.id);
+                }}
+            >
+                Удалить
+            </button>
+        </div>
+    </motion.div>
+);
+
+const PhotoModal = ({ photo, onClose }) => (
+    <AnimatePresence>
+        {photo && (
+            <div className="photo-modal" onClick={onClose}>
+                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <img src={photo.photoUrl} alt="Просмотр" />
+                    <button className="close-modal" onClick={onClose}>×</button>
+                </div>
+            </div>
+        )}
+    </AnimatePresence>
+);
 
 export default PhotoGallery;

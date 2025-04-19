@@ -12,22 +12,27 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Настройка firewall, если нужно разрешить использование символа ";"
     @Bean
     public HttpFirewall allowAll() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowSemicolon(true);  // Разрешаем символ ";"
+        firewall.setAllowSemicolon(true);
+        firewall.setAllowUrlEncodedSlash(true); // Важно для путей с /
         return firewall;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Отключаем CSRF
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**","/ws-messenger/**").permitAll()
-
+                        .requestMatchers(
+                                "/api/files/**",  // Явно разрешаем доступ к файлам
+                                "/api/users/**",
+                                "/**",
+                                "/ws-messenger/**"
+                        ).permitAll()
                 );
+
 
         return http.build();
     }

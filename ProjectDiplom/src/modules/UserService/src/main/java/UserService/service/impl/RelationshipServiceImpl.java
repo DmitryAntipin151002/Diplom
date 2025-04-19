@@ -27,9 +27,13 @@ public class RelationshipServiceImpl implements RelationshipService {
     private final RelationshipStatusRepository statusRepository;
     private final ModelMapper modelMapper;
 
+    @Transactional
     @Override
     public List<RelationshipDto> getUserRelationships(UUID userId, String typeName) {
-        return relationshipRepository.findByUserIdAndType(userId, RelationshipType.valueOf(typeName))
+        RelationshipTypeEntity type = typeRepository.findByName(typeName)
+                .orElseThrow(() -> new RelationshipTypeNotFoundException(typeName));
+
+        return relationshipRepository.findByUserIdAndType(userId, type)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

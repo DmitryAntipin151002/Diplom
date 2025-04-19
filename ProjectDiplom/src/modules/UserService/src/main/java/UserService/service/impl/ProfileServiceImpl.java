@@ -47,27 +47,11 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public void updateAvatar(UUID userId, MultipartFile avatarFile) {
-        if (avatarFile.isEmpty()) {
-            throw new IllegalArgumentException("Avatar file cannot be empty");
-        }
-
+    public void updateAvatarPath(UUID userId, String filePath) {
         UserProfile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new ProfileNotFoundException(userId));
 
-        // Удаляем старый аватар, если он существует
-        if (profile.getAvatarUrl() != null) {
-            try {
-                fileStorageService.delete(profile.getAvatarUrl());
-            } catch (Exception e) {
-                // Логируем ошибку, но не прерываем выполнение
-                System.err.println("Failed to delete old avatar: " + e.getMessage());
-            }
-        }
-
-        // Сохраняем новый аватар
-        String newAvatarUrl = fileStorageService.store(avatarFile);
-        profile.setAvatarUrl(newAvatarUrl);
+        profile.setAvatarUrl(filePath);
         profile.setUpdatedAt(LocalDateTime.now());
         profileRepository.save(profile);
     }

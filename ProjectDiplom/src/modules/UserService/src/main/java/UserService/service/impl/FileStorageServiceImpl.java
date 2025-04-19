@@ -13,8 +13,8 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
-
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
     private final Path rootLocation;
@@ -23,7 +23,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         this.rootLocation = Paths.get(location).toAbsolutePath().normalize();
     }
 
-
+    @Override
     public void init() {
         try {
             Files.createDirectories(rootLocation);
@@ -33,58 +33,71 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public String store(MultipartFile file) {
+    public String store(MultipartFile file, UUID userId) {
         try {
             if (file.isEmpty()) {
                 throw new FileStorageException("Failed to store empty file");
             }
 
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename != null ?
-                    originalFilename.substring(originalFilename.lastIndexOf('.')) : "";
-            String filename = UUID.randomUUID() + extension;
-
-            Path destinationFile = this.rootLocation.resolve(filename)
-                    .normalize()
-                    .toAbsolutePath();
-
-            if (!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())) {
-                throw new FileStorageException("Cannot store file outside current directory");
+            // Создаем папку пользователя
+            Path userDir = this.rootLocation.resolve(userId.toString());
+            if (!Files.exists(userDir)) {
+                Files.createDirectories(userDir);
             }
 
-            Files.copy(file.getInputStream(), destinationFile);
-            return filename;
+            // Генерируем уникальное имя файла
+            String filename = UUID.randomUUID() +
+                    getFileExtension(file.getOriginalFilename());
+
+            // Сохраняем файл
+            Path destination = userDir.resolve(filename);
+            Files.copy(file.getInputStream(), destination,
+                    StandardCopyOption.REPLACE_EXISTING);
+
+            return userId + "/" + filename;
+
         } catch (IOException e) {
             throw new FileStorageException("Failed to store file", e);
         }
     }
 
+    private String getFileExtension(String filename) {
+        return filename != null && filename.contains(".")
+                ? filename.substring(filename.lastIndexOf('.'))
+                : "";
+    }
+
     @Override
-    public void delete(String filename) {
+    public void delete(String filePath) {
         try {
-            Path file = rootLocation.resolve(filename).normalize();
+            Path file = rootLocation.resolve(filePath).normalize();
             if (!Files.exists(file)) {
-                throw new FileStorageException("File not found: " + filename);
+                throw new FileStorageException("File not found: " + filePath);
             }
             Files.deleteIfExists(file);
+
+            // Удаляем папку пользователя, если она пуста
+            Path userDir = file.getParent();
+            if (Files.list(userDir).count() == 0) {
+                Files.deleteIfExists(userDir);
+            }
         } catch (IOException e) {
-            throw new FileStorageException("Failed to delete file: " + filename, e);
+            throw new FileStorageException("Failed to delete file: " + filePath, e);
         }
     }
 
     @Override
-    public Resource loadAsResource(String filename) {
+    public Resource loadAsResource(String filePath) {
         try {
-            Path file = rootLocation.resolve(filename).normalize();
+            Path file = rootLocation.resolve(filePath).normalize();
             Resource resource = new UrlResource(file.toUri());
 
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new FileStorageException("Could not read file: " + filename);
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new FileStorageException("Could not read file: " + filePath);
             }
+            return resource;
         } catch (MalformedURLException e) {
-            throw new FileStorageException("Could not read file: " + filename, e);
+            throw new FileStorageException("Could not read file: " + filePath, e);
         }
     }
 }

@@ -47,3 +47,32 @@ export const getUserStats = async (userId) => {
         throw new Error(error.response?.data?.message || 'Не удалось загрузить статистику');
     }
 };
+
+export const uploadAvatar = async (userId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axios.post(
+        `${API_BASE_URL}/api/users/${userId}/avatar`,
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }
+    );
+    return response.data.avatarUrl;
+};
+
+export const createProfileIfNotExists = async (userId) => {
+    try {
+        const response = await axios.post(
+            `${API_BASE_URL}/profiles/${userId}/create`,
+            {},
+            getAuthHeader()
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Не удалось создать профиль');
+    }
+};

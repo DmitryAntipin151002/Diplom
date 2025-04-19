@@ -289,6 +289,54 @@ body {
     transform: translateY(-50%);
 }
 
+/* Добавьте в ProfilePage.css */
+.avatar-upload-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.avatar-upload-label {
+    cursor: pointer;
+    display: block;
+}
+
+.avatar-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #4a6bff;
+    position: relative;
+}
+
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.avatar-preview:hover .upload-overlay {
+    opacity: 1;
+}
+
 @media (max-width: 768px) {
     .main-panel {
         grid-template-columns: 1fr;

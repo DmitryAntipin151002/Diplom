@@ -2,6 +2,7 @@ package UserService.repository;
 
 import UserService.model.RelationshipStatus;
 import UserService.model.RelationshipType;
+import UserService.model.RelationshipTypeEntity;
 import UserService.model.UserRelationship;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +15,7 @@ import java.util.UUID;
 public interface UserRelationshipRepository {
     List<UUID> findFriendIds(UUID userId);
     int countMutualFriends(UUID userId1, UUID userId2);
-    List<UserRelationship> findByUserIdAndType(UUID userId, RelationshipType type);
+    List<UserRelationship> findByUserIdAndType(UUID userId, RelationshipTypeEntity type);
     Optional<UserRelationship> findByUserIdAndRelatedUserIdAndType(
             UUID userId, UUID relatedUserId, RelationshipType type);
     List<UserRelationship> findByRelatedUserIdAndTypeAndStatus(

@@ -40,6 +40,7 @@ public class ModelMapperConfig {
         // Маппинг для отношений
         modelMapper.createTypeMap(UserRelationship.class, RelationshipDto.class)
                 .addMappings(m -> {
+
                     m.map(src -> src.getType().getName(), RelationshipDto::setType);
                     m.map(src -> src.getStatus().getName(), RelationshipDto::setStatus);
                 });

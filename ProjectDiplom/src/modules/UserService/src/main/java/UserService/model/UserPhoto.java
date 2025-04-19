@@ -1,12 +1,19 @@
 package UserService.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Builder
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "user_photos")
 public class UserPhoto {
     @Id
@@ -22,7 +29,7 @@ public class UserPhoto {
 
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "upload_date",nullable = false)
     private LocalDateTime uploadDate = LocalDateTime.now();
 
     private boolean isProfilePhoto = false;

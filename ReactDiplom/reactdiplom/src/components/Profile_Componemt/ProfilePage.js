@@ -1,39 +1,43 @@
-// ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getProfile, updateProfile, getUserStats } from '../../services/ProfileService';
-import { uploadAvatar, uploadPhoto } from '../../services/files';
+import { getProfile, updateProfile, getUserStats, uploadAvatar } from '../../services/ProfileService';
+import { getUserPhotos, uploadPhotoFile, deletePhoto, setProfilePhoto } from '../../services/userPhotos';
 import ProfileForm from '../../components/Profile_Componemt/ProfileForm';
 import AvatarUpload from '../../components/Profile_Componemt/AvatarUpload';
 import UserStatsCard from '../../components/Profile_Componemt/UserStatsCard';
 import PhotoGallery from '../../components/Profile_Componemt/PhotoGallery';
 import LoadingSpinner from '../../components/Profile_Componemt/LoadingSpinner';
 import './../../assets/ProfilePage.css';
+import axios from "axios";
 
 const ProfilePage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [stats, setStats] = useState(null);
+    const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [error, setError] = useState('');
-
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 setLoading(true);
-                const [profileResponse, statsResponse] = await Promise.all([
+                const [profileResponse, statsResponse, photosResponse] = await Promise.all([
                     getProfile(userId),
-                    getUserStats(userId)
+                    getUserStats(userId),
+                    getUserPhotos(userId)
                 ]);
 
                 setProfile(profileResponse);
                 setStats(statsResponse);
+                setPhotos(photosResponse || []);
             } catch (err) {
                 setError(err.message || 'Ошибка загрузки профиля');
                 setProfile(null);
+                setPhotos([]);
             } finally {
                 setLoading(false);
             }
@@ -54,11 +58,97 @@ const ProfilePage = () => {
 
     const handleAvatarUpload = async (file) => {
         try {
-            await uploadAvatar(userId, file);
-            const response = await getProfile(userId);
-            setProfile(response);
+            setLoading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await axios.post(
+                `${API_BASE_URL}/api/users/${userId}/avatar`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            // Обновляем профиль с новым аватаром
+            const updatedProfile = await getProfile(userId);
+            setProfile({
+                ...updatedProfile,
+                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}`
+            });
         } catch (err) {
             setError(err.message || 'Ошибка загрузки аватара');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePhotoUpload = async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('description', 'Новое фото');
+
+            const response = await axios.post(
+                `http://localhost:8083/api/users/${userId}/photos/upload`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            // Используем полный URL, который возвращает сервер
+            const photoUrl = `http://localhost:8083${response.data.photoUrl}`;
+
+            setPhotos(prev => [...prev, {
+                id: response.data.id,
+                photoUrl: photoUrl,
+                description: response.data.description,
+                isProfilePhoto: false
+            }]);
+        } catch (err) {
+            console.error('Ошибка загрузки:', err);
+            setError('Не удалось загрузить фото');
+        }
+    };
+
+    const handleDeletePhoto = async (photoId) => {
+        try {
+            await deletePhoto(userId, photoId);
+            setPhotos(prev => prev.filter(photo => photo.id !== photoId));
+        } catch (err) {
+            setError(err.message || 'Ошибка удаления фотографии');
+        }
+    };
+
+    const handleSetProfilePhoto = async (photoId) => {
+        try {
+            setLoading(true);
+            await setProfilePhoto(userId, photoId);
+
+            // Обновляем список фото
+            const updatedPhotos = await getUserPhotos(userId);
+            setPhotos(updatedPhotos.map(photo => ({
+                ...photo,
+                photoUrl: photo.photoUrl.startsWith('/api/files/')
+                    ? `${API_BASE_URL}${photo.photoUrl}`
+                    : photo.photoUrl
+            })));
+
+            // Обновляем профиль для отображения нового аватара
+            const updatedProfile = await getProfile(userId);
+            setProfile({
+                ...updatedProfile,
+                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}`
+            });
+        } catch (err) {
+            setError(err.message || 'Ошибка установки профильной фотографии');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -238,7 +328,6 @@ const ProfilePage = () => {
                             </AnimatePresence>
                         </div>
 
-
                         <div className="stats-panel">
                             {stats && (
                                 <UserStatsCard
@@ -248,7 +337,12 @@ const ProfilePage = () => {
                                     onEventsClick={() => handleNavigate('events')}
                                 />
                             )}
-                            {profile && <PhotoGallery userId={userId} />}
+                            <PhotoGallery
+                                photos={photos}
+                                onUpload={handlePhotoUpload}
+                                onDelete={handleDeletePhoto}
+                                onSetProfile={handleSetProfilePhoto}
+                            />
                         </div>
                     </div>
                 </>

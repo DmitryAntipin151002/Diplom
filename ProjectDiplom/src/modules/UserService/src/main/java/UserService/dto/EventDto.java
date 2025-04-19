@@ -15,6 +15,7 @@ public class EventDto {
     private String title;
     private String description;
     private LocalDateTime startTime;
+    private String sportType;
     private LocalDateTime endTime;
     private String location;
     private String statusCode;
