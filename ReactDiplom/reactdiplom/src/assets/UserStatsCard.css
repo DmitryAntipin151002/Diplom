@@ -78,3 +78,17 @@
     font-size: 0.9rem;
     margin-top: 0.5rem;
 }
+
+.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clickable:hover {
+    transform: translateY(-3px);
+    text-shadow: 0 0 10px rgba(162, 57, 255, 0.5);
+}
+
+.clickable:active {
+    transform: translateY(0);
+}

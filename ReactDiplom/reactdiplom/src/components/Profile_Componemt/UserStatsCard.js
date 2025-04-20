@@ -10,39 +10,51 @@ const statVariants = {
         transition: { delay: i * 0.1, duration: 0.5 }
     })
 };
-
-const UserStatsCard = ({ stats }) => {
+const UserStatsCard = ({ stats, onNotificationClick, onFriendsClick, onEventsClick }) => {
     return (
         <motion.div
+            className="stats-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="stats-card"
+            transition={{ delay: 0.4 }}
         >
-            <h3 className="cyber-title">Статистика</h3>
+            <div className="stats-header">
+                <h3 className="neon-subtitle">Статистика</h3>
+            </div>
+
             <div className="stats-grid">
-                {[
-                    { value: stats.eventCount || 0, label: 'Событий', color: '#7026e0' },
-                    { value: stats.friendsCount || 0, label: 'Друзей', color: '#a239ff' },
-                    { value: stats.notificationCount || 0, label: 'Уведомлений', color: '#5e2db3' }
-                ].map((stat, i) => (
-                    <motion.div
-                        key={stat.label}
-                        custom={i}
-                        initial="hidden"
-                        animate="visible"
-                        variants={statVariants}
-                        className="stat-item"
-                        style={{ '--stat-color': stat.color }}
-                    >
-                        <div className="stat-glow"></div>
-                        <div className="stat-value">{stat.value}</div>
-                        <div className="stat-label">{stat.label}</div>
-                    </motion.div>
-                ))}
+                <div className="stat-item">
+                    <i className="icon-trophy"></i>
+                    <span>{stats?.achievementsCount || 0}</span>
+                    <small>Достижений</small>
+                </div>
+
+                <div className="stat-item clickable" onClick={onFriendsClick}>
+                    <i className="icon-users"></i>
+                    <span>{stats?.friendsCount || 0}</span>
+                    <small>Друзей</small>
+                </div>
+
+                <div className="stat-item clickable" onClick={onEventsClick}>
+                    <i className="icon-calendar"></i>
+                    <span>{stats?.eventsCount || 0}</span>
+                    <small>Событий</small>
+                </div>
+            </div>
+
+            <div className="quick-actions">
+                <motion.button
+                    className="action-btn"
+                    onClick={onNotificationClick}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    <i className="icon-bell"></i> Уведомления
+                </motion.button>
             </div>
         </motion.div>
     );
 };
+
 
 export default UserStatsCard;

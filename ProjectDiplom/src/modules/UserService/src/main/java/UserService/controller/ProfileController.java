@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -115,5 +116,14 @@ public class ProfileController {
     @GetMapping("/{userId}/stats")
     public ResponseEntity<UserStatsDto> getUserStats(@PathVariable UUID userId) {
         return ResponseEntity.ok(profileService.getUserStats(userId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProfileDto>> searchProfiles(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<ProfileDto> results = profileService.searchProfiles(query, limit);
+        return ResponseEntity.ok(results);
     }
 }

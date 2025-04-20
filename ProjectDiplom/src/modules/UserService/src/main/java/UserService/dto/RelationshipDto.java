@@ -15,4 +15,7 @@ public class RelationshipDto {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    // Добавьте связи с сущностями пользователей
+    private UserDto user;
+    private UserDto relatedUser;
 }

@@ -1,9 +1,12 @@
 package UserService.service.impl;
 
+import UserService.dto.ProfileDto;
 import UserService.dto.RelationshipDto;
+import UserService.dto.UserDto;
 import UserService.exception.*;
 import UserService.model.*;
 import UserService.repository.*;
+import UserService.service.ProfileService;
 import UserService.service.RelationshipService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -22,7 +25,9 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     @Qualifier("userRelationshipRepository")
     private final UserRelationshipRepository relationshipRepository;
+    private final ProfileService profileService;
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
     private final RelationshipTypeRepository typeRepository;
     private final RelationshipStatusRepository statusRepository;
     private final ModelMapper modelMapper;
@@ -30,6 +35,11 @@ public class RelationshipServiceImpl implements RelationshipService {
     @Transactional
     @Override
     public List<RelationshipDto> getUserRelationships(UUID userId, String typeName) {
+
+        if (!userProfileRepository.existsByUserId(userId)) {
+            profileService.getOrCreateProfile(userId);
+        }
+
         RelationshipTypeEntity type = typeRepository.findByName(typeName)
                 .orElseThrow(() -> new RelationshipTypeNotFoundException(typeName));
 
@@ -111,8 +121,21 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     private RelationshipDto toDto(UserRelationship relationship) {
         RelationshipDto dto = modelMapper.map(relationship, RelationshipDto.class);
-        dto.setType(relationship.getType().getName());
-        dto.setStatus(relationship.getStatus().getName());
+        dto.setUser(convertToUserDto(relationship.getUser()));
+        dto.setRelatedUser(convertToUserDto(relationship.getRelatedUser()));
         return dto;
+    }
+    private UserDto convertToUserDto(User user) {
+        try {
+            UserDto userDto = modelMapper.map(user, UserDto.class);
+            userDto.setProfile(profileService.getProfile(user.getId()));
+            return userDto;
+        } catch (ProfileNotFoundException ex) {
+            // Создаем пустой профиль при его отсутствии
+            ProfileDto newProfile = profileService.getOrCreateProfile(user.getId());
+            UserDto userDto = modelMapper.map(user, UserDto.class); // Маппим базовые поля
+            userDto.setProfile(newProfile); // Устанавливаем новый профиль в ДТО
+            return userDto;
+        }
     }
 }

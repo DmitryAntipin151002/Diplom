@@ -11,11 +11,15 @@ import UserService.service.FileStorageService;
 import UserService.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,5 +98,25 @@ public class ProfileServiceImpl implements ProfileService {
         dto.setUpdatedAt(profile.getUpdatedAt());
 
         return dto;
+    }
+
+    @Override
+    public List<ProfileDto> searchProfiles(String query, int limit) {
+        Specification<UserProfile> spec = (root, criteriaQuery, cb) -> {
+            String searchTerm = "%" + query.toLowerCase() + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("firstName")), searchTerm),
+                    cb.like(cb.lower(root.get("lastName")), searchTerm)
+            );
+        };
+
+        return profileRepository.findAll(spec, PageRequest.of(0, limit))
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private ProfileDto convertToDto(UserProfile profile) {
+        return modelMapper.map(profile, ProfileDto.class);
     }
 }

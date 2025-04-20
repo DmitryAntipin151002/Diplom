@@ -356,4 +356,26 @@ body {
         margin-bottom: 2rem;
         justify-content: flex-end;
     }
+
+    .friend-btn {
+        background: #7026e0;
+        border: 2px solid #a239ff;
+        color: white;
+        padding: 0.8rem 1.5rem;
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+
+    .friend-btn:hover {
+        box-shadow: 0 0 15px rgba(112, 38, 224, 0.3);
+        transform: scale(1.05);
+    }
+
+    .friend-btn:active {
+        transform: scale(0.95);
+    }
+
+    .friend-btn i {
+        margin-right: 8px;
+    }
 }

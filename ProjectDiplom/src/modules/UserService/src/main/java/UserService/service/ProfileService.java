@@ -6,6 +6,7 @@ import UserService.model.UserProfile;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
+import java.util.List;
 
 public interface ProfileService {
     ProfileDto getProfile(UUID userId);
@@ -17,4 +18,5 @@ public interface ProfileService {
     void updateAvatarPath(UUID userId, String filePath);
     UserStatsDto getUserStats(UUID userId);
     ProfileDto getOrCreateProfile(UUID userId);
+    List<ProfileDto> searchProfiles(String query, int limit);
 }

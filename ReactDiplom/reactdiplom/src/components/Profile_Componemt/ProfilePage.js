@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { jwtDecode } from 'jwt-decode';
 import { getProfile, updateProfile, getUserStats, uploadAvatar } from '../../services/ProfileService';
 import { getUserPhotos, uploadPhotoFile, deletePhoto, setProfilePhoto } from '../../services/userPhotos';
 import ProfileForm from '../../components/Profile_Componemt/ProfileForm';
@@ -12,7 +13,7 @@ import './../../assets/ProfilePage.css';
 import axios from "axios";
 
 const ProfilePage = () => {
-    const { userId } = useParams();
+    const { userId: profileUserId } = useParams();
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [stats, setStats] = useState(null);
@@ -20,15 +21,27 @@ const ProfilePage = () => {
     const [loading, setLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [error, setError] = useState('');
+    const [currentUserId, setCurrentUserId] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
+
+
+
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 setLoading(true);
+
+                // Получаем ID текущего пользователя
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    const decoded = jwtDecode(token);
+                    setCurrentUserId(decoded.userId);
+                }
+
                 const [profileResponse, statsResponse, photosResponse] = await Promise.all([
-                    getProfile(userId),
-                    getUserStats(userId),
-                    getUserPhotos(userId)
+                    getProfile(profileUserId),
+                    getUserStats(profileUserId),
+                    getUserPhotos(profileUserId)
                 ]);
 
                 setProfile(profileResponse);
@@ -44,11 +57,56 @@ const ProfilePage = () => {
         };
 
         fetchProfileData();
-    }, [userId]);
+    }, [profileUserId]);
+
+    const handleAddFriend = async () => {
+        try {
+            if (!currentUserId) {
+                navigate('/login');
+                return;
+            }
+
+            if (currentUserId === profileUserId) {
+                setError('Нельзя добавить самого себя');
+                return;
+            }
+
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(
+                `${API_BASE_URL}/api/relationships`,
+                null,
+                {
+                    params: {
+                        userId: currentUserId,
+                        relatedUserId: profileUserId,
+                        type: 'FRIEND'
+                    },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            // Обновление интерфейса
+            if (response.status === 201) {
+                alert('Запрос на дружбу отправлен!');
+                // Обновляем список друзей
+                const updatedStats = await getUserStats(profileUserId);
+                setStats(prev => ({
+                    ...prev,
+                    friendsCount: updatedStats.friendsCount + 1
+                }));
+            }
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Ошибка при отправке запроса';
+            setError(errorMessage);
+            setTimeout(() => setError(''), 5000);
+        }
+    };
 
     const handleSaveProfile = async (updatedData) => {
         try {
-            const response = await updateProfile(userId, updatedData);
+            const response = await updateProfile(profileUserId, updatedData);
             setProfile(response);
             setEditMode(false);
         } catch (err) {
@@ -62,21 +120,22 @@ const ProfilePage = () => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await axios.post(
-                `${API_BASE_URL}/api/users/${userId}/avatar`,
+            const token = localStorage.getItem('authToken');
+            await axios.post(
+                `${API_BASE_URL}/api/users/${profileUserId}/avatar`,
                 formData,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
                     },
                 }
             );
 
-            // Обновляем профиль с новым аватаром
-            const updatedProfile = await getProfile(userId);
+            const updatedProfile = await getProfile(profileUserId);
             setProfile({
                 ...updatedProfile,
-                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}`
+                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}?t=${Date.now()}`
             });
         } catch (err) {
             setError(err.message || 'Ошибка загрузки аватара');
@@ -91,47 +150,60 @@ const ProfilePage = () => {
             formData.append('file', file);
             formData.append('description', 'Новое фото');
 
+            const token = localStorage.getItem('authToken');
             const response = await axios.post(
-                `http://localhost:8083/api/users/${userId}/photos/upload`,
+                `${API_BASE_URL}/api/users/${profileUserId}/photos/upload`,
                 formData,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
                     },
                 }
             );
 
-            // Используем полный URL, который возвращает сервер
-            const photoUrl = `http://localhost:8083${response.data.photoUrl}`;
-
             setPhotos(prev => [...prev, {
-                id: response.data.id,
-                photoUrl: photoUrl,
-                description: response.data.description,
-                isProfilePhoto: false
+                ...response.data,
+                photoUrl: `${API_BASE_URL}${response.data.photoUrl}`
             }]);
         } catch (err) {
-            console.error('Ошибка загрузки:', err);
             setError('Не удалось загрузить фото');
         }
     };
 
     const handleDeletePhoto = async (photoId) => {
         try {
-            await deletePhoto(userId, photoId);
+            const token = localStorage.getItem('authToken');
+            await axios.delete(`${API_BASE_URL}/api/users/${profileUserId}/photos/${photoId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setPhotos(prev => prev.filter(photo => photo.id !== photoId));
         } catch (err) {
-            setError(err.message || 'Ошибка удаления фотографии');
+            setError('Ошибка удаления фотографии');
         }
     };
 
     const handleSetProfilePhoto = async (photoId) => {
         try {
             setLoading(true);
-            await setProfilePhoto(userId, photoId);
+            const token = localStorage.getItem('authToken');
+            await axios.patch(
+                `${API_BASE_URL}/api/users/${profileUserId}/photos/${photoId}/profile`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
 
-            // Обновляем список фото
-            const updatedPhotos = await getUserPhotos(userId);
+            const [updatedPhotos, updatedProfile] = await Promise.all([
+                getUserPhotos(profileUserId),
+                getProfile(profileUserId)
+            ]);
+
             setPhotos(updatedPhotos.map(photo => ({
                 ...photo,
                 photoUrl: photo.photoUrl.startsWith('/api/files/')
@@ -139,14 +211,12 @@ const ProfilePage = () => {
                     : photo.photoUrl
             })));
 
-            // Обновляем профиль для отображения нового аватара
-            const updatedProfile = await getProfile(userId);
             setProfile({
                 ...updatedProfile,
-                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}`
+                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}?t=${Date.now()}`
             });
         } catch (err) {
-            setError(err.message || 'Ошибка установки профильной фотографии');
+            setError('Ошибка установки профильной фотографии');
         } finally {
             setLoading(false);
         }
@@ -158,7 +228,7 @@ const ProfilePage = () => {
     };
 
     const handleNavigate = (path) => {
-        navigate(`/${path}`);
+        navigate(`/${path}/${profileUserId}`);
     };
 
     if (loading) return <LoadingSpinner />;
@@ -182,25 +252,24 @@ const ProfilePage = () => {
                 >
                     Выйти
                 </motion.button>
-                <motion.button
-                    whileHover={{
-                        scale: 1.05,
-                        filter: 'brightness(1.2)'
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setEditMode(!editMode)}
-                    className="cyber-button"
-                >
-                    {editMode ? (
-                        <>
-                            <i className="icon-close"></i> Отменить
-                        </>
-                    ) : (
-                        <>
-                            <i className="icon-edit"></i> Редактировать
-                        </>
-                    )}
-                </motion.button>
+                {currentUserId === profileUserId && (
+                    <motion.button
+                        whileHover={{ scale: 1.05, filter: 'brightness(1.2)' }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setEditMode(!editMode)}
+                        className="cyber-button"
+                    >
+                        {editMode ? (
+                            <>
+                                <i className="icon-close"></i> Отменить
+                            </>
+                        ) : (
+                            <>
+                                <i className="icon-edit"></i> Редактировать
+                            </>
+                        )}
+                    </motion.button>
+                )}
             </div>
 
             <AnimatePresence>
@@ -241,7 +310,7 @@ const ProfilePage = () => {
                             <div className="avatar-section">
                                 {editMode ? (
                                     <AvatarUpload
-                                        currentAvatar={profile?.avatarUrl || '/default-avatar.png'}
+                                        currentAvatar={profile?.avatarUrl}
                                         onUpload={handleAvatarUpload}
                                     />
                                 ) : (
@@ -251,12 +320,12 @@ const ProfilePage = () => {
                                         className="avatar-preview"
                                     >
                                         <img
-                                            src={profile?.avatarUrl || '/default-avatar.png'}
+                                            src={profile.avatarUrl || `${API_BASE_URL}/default-avatar.png`}
                                             alt="Аватар пользователя"
                                         />
                                     </motion.div>
                                 )}
-                                {!editMode && (
+                                {!editMode && currentUserId === profileUserId && (
                                     <motion.button
                                         className="edit-avatar-btn"
                                         onClick={() => setEditMode(true)}
@@ -292,12 +361,22 @@ const ProfilePage = () => {
                                         exit={{ opacity: 0 }}
                                         className="info-section"
                                     >
+                                        {currentUserId && currentUserId !== profileUserId && (
+                                            <motion.button
+                                                className="cyber-button friend-btn"
+                                                onClick={handleAddFriend}
+                                                whileHover={{ scale: 1.05 }}
+                                            >
+                                                <i className="icon-user-plus"></i> Добавить в друзья
+                                            </motion.button>
+                                        )}
+
                                         <h2 className="neon-subtitle">
-                                            {profile?.firstName} {profile?.lastName}
+                                            {profile.firstName} {profile.lastName}
                                         </h2>
                                         <div className="bio-box">
                                             <i className="icon-quote"></i>
-                                            <p>{profile?.bio || 'Нет информации о себе'}</p>
+                                            <p>{profile.bio || 'Нет информации о себе'}</p>
                                         </div>
 
                                         <div className="details-grid">
@@ -305,7 +384,7 @@ const ProfilePage = () => {
                                                 <i className="icon-sport"></i>
                                                 <div>
                                                     <h3>Вид спорта</h3>
-                                                    <p>{profile?.sportType || 'Не указан'}</p>
+                                                    <p>{profile.sportType || 'Не указан'}</p>
                                                 </div>
                                             </div>
                                             <div className="detail-card">
@@ -313,12 +392,12 @@ const ProfilePage = () => {
                                                 <div>
                                                     <h3>Вебсайт</h3>
                                                     <a
-                                                        href={profile?.website || '#'}
+                                                        href={profile.website || '#'}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="cyber-link"
                                                     >
-                                                        {profile?.website || 'Не указан'}
+                                                        {profile.website || 'Не указан'}
                                                     </a>
                                                 </div>
                                             </div>
