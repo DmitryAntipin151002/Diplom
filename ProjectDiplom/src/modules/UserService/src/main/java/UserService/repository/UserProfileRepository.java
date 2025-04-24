@@ -8,9 +8,7 @@ import UserService.model.UserStats;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -29,8 +27,9 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, UUID>,
             "LEFT JOIN u.notifications n " +
             "WHERE u.id = :userId " +
             "GROUP BY u.id")
-    Optional<UserStats> getUserStats(UUID userId);
+    Optional<UserStats> getUserStats(@Param("userId") UUID userId);
 
+    @EntityGraph(attributePaths = {"user"})
     Optional<UserProfile> findByUser(User user);
 
     @Query("SELECT p FROM UserProfile p WHERE " +
@@ -43,4 +42,14 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, UUID>,
     }
 
     boolean existsByUserId(UUID userId);
+
+    @Query("SELECT p.avatarUrl FROM UserProfile p WHERE p.user.id = :userId")
+    Optional<String> findAvatarUrlByUserId(@Param("userId") UUID userId);
+
+    @Modifying
+    @Query("UPDATE UserProfile p SET p.avatarUrl = :avatarUrl WHERE p.user.id = :userId")
+    void updateAvatarUrl(@Param("userId") UUID userId, @Param("avatarUrl") String avatarUrl);
+
+    @EntityGraph(attributePaths = {"user.photos"})
+    Optional<UserProfile> findWithPhotosByUserId(UUID userId);
 }

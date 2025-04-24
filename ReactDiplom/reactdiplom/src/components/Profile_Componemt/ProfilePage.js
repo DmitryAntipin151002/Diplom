@@ -2,8 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jwtDecode } from 'jwt-decode';
-import { getProfile, updateProfile, getUserStats, uploadAvatar } from '../../services/ProfileService';
-import { getUserPhotos, uploadPhotoFile, deletePhoto, setProfilePhoto } from '../../services/userPhotos';
+import {
+    getProfile,
+    updateProfile,
+    getUserStats,
+    setAvatarFromGallery
+} from '../../services/ProfileService';
+import {
+    getUserPhotos,
+    uploadPhotoFile,
+    deletePhoto,
+    setProfilePhoto
+} from '../../services/userPhotos';
 import ProfileForm from '../../components/Profile_Componemt/ProfileForm';
 import AvatarUpload from '../../components/Profile_Componemt/AvatarUpload';
 import UserStatsCard from '../../components/Profile_Componemt/UserStatsCard';
@@ -24,15 +34,12 @@ const ProfilePage = () => {
     const [currentUserId, setCurrentUserId] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
 
-
-
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 setLoading(true);
-
-                // Получаем ID текущего пользователя
                 const token = localStorage.getItem('authToken');
+
                 if (token) {
                     const decoded = jwtDecode(token);
                     setCurrentUserId(decoded.userId);
@@ -48,7 +55,7 @@ const ProfilePage = () => {
                 setStats(statsResponse);
                 setPhotos(photosResponse || []);
             } catch (err) {
-                setError(err.message || 'Ошибка загрузки профиля');
+                setError(err.message || 'Error loading profile');
                 setProfile(null);
                 setPhotos([]);
             } finally {
@@ -67,7 +74,7 @@ const ProfilePage = () => {
             }
 
             if (currentUserId === profileUserId) {
-                setError('Нельзя добавить самого себя');
+                setError("Can't add yourself");
                 return;
             }
 
@@ -87,10 +94,8 @@ const ProfilePage = () => {
                 }
             );
 
-            // Обновление интерфейса
             if (response.status === 201) {
-                alert('Запрос на дружбу отправлен!');
-                // Обновляем список друзей
+                alert('Friend request sent!');
                 const updatedStats = await getUserStats(profileUserId);
                 setStats(prev => ({
                     ...prev,
@@ -98,7 +103,7 @@ const ProfilePage = () => {
                 }));
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Ошибка при отправке запроса';
+            const errorMessage = err.response?.data?.message || 'Error sending request';
             setError(errorMessage);
             setTimeout(() => setError(''), 5000);
         }
@@ -110,7 +115,7 @@ const ProfilePage = () => {
             setProfile(response);
             setEditMode(false);
         } catch (err) {
-            setError(err.message || 'Ошибка обновления профиля');
+            setError(err.message || 'Error updating profile');
         }
     };
 
@@ -138,7 +143,7 @@ const ProfilePage = () => {
                 avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}?t=${Date.now()}`
             });
         } catch (err) {
-            setError(err.message || 'Ошибка загрузки аватара');
+            setError(err.message || 'Error uploading avatar');
         } finally {
             setLoading(false);
         }
@@ -146,82 +151,45 @@ const ProfilePage = () => {
 
     const handlePhotoUpload = async (file) => {
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('description', 'Новое фото');
-
-            const token = localStorage.getItem('authToken');
-            const response = await axios.post(
-                `${API_BASE_URL}/api/users/${profileUserId}/photos/upload`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${token}`
-                    },
-                }
-            );
-
-            setPhotos(prev => [...prev, {
-                ...response.data,
-                photoUrl: `${API_BASE_URL}${response.data.photoUrl}`
-            }]);
+            const newPhoto = await uploadPhotoFile(profileUserId, file);
+            setPhotos(prev => [...prev, newPhoto]);
         } catch (err) {
-            setError('Не удалось загрузить фото');
+            setError('Failed to upload photo');
         }
     };
 
     const handleDeletePhoto = async (photoId) => {
         try {
-            const token = localStorage.getItem('authToken');
-            await axios.delete(`${API_BASE_URL}/api/users/${profileUserId}/photos/${photoId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setPhotos(prev => prev.filter(photo => photo.id !== photoId));
+            await deletePhoto(profileUserId, photoId);
+            setPhotos(prev => prev.filter(p => p.id !== photoId));
+            setError(''); // Сброс ошибок при успешном удалении
         } catch (err) {
-            setError('Ошибка удаления фотографии');
+            setError(err.message || 'Error deleting photo');
         }
     };
 
     const handleSetProfilePhoto = async (photoId) => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('authToken');
-            await axios.patch(
-                `${API_BASE_URL}/api/users/${profileUserId}/photos/${photoId}/profile`,
-                null,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+            await setProfilePhoto(profileUserId, photoId);
+            const newAvatarUrl = await setAvatarFromGallery(profileUserId, photoId);
 
-            const [updatedPhotos, updatedProfile] = await Promise.all([
-                getUserPhotos(profileUserId),
-                getProfile(profileUserId)
-            ]);
-
-            setPhotos(updatedPhotos.map(photo => ({
-                ...photo,
-                photoUrl: photo.photoUrl.startsWith('/api/files/')
-                    ? `${API_BASE_URL}${photo.photoUrl}`
-                    : photo.photoUrl
+            setPhotos(prev => prev.map(p => ({
+                ...p,
+                isProfilePhoto: p.id === photoId
             })));
 
-            setProfile({
-                ...updatedProfile,
-                avatarUrl: `${API_BASE_URL}/api/files/${updatedProfile.avatarUrl}?t=${Date.now()}`
-            });
+            setProfile(prev => ({
+                ...prev,
+                avatarUrl: newAvatarUrl
+            }));
+            setError(''); // Сброс ошибок при успешной установке
         } catch (err) {
-            setError('Ошибка установки профильной фотографии');
+            setError(err.message || 'Error setting profile photo');
         } finally {
             setLoading(false);
         }
     };
-
     const handleLogout = () => {
         localStorage.removeItem('authToken');
         navigate('/login');
@@ -231,6 +199,9 @@ const ProfilePage = () => {
         navigate(`/${path}/${profileUserId}`);
     };
 
+
+
+
     if (loading) return <LoadingSpinner />;
 
     return (
@@ -238,6 +209,8 @@ const ProfilePage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
+
+
             className="profile-page-container"
         >
             <div className="cyber-grid"></div>
@@ -249,25 +222,24 @@ const ProfilePage = () => {
                     onClick={handleLogout}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+
                 >
-                    Выйти
+                    Logout
                 </motion.button>
+
                 {currentUserId === profileUserId && (
                     <motion.button
-                        whileHover={{ scale: 1.05, filter: 'brightness(1.2)' }}
+                        className={`cyber-button ${editMode ? 'cancel-mode' : 'edit-mode'}`}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setEditMode(!editMode)}
-                        className="cyber-button"
                     >
-                        {editMode ? (
-                            <>
-                                <i className="icon-close"></i> Отменить
-                            </>
-                        ) : (
-                            <>
-                                <i className="icon-edit"></i> Редактировать
-                            </>
-                        )}
+        <span className="button-icon">
+            {editMode ? '✕' : '✎'}
+        </span>
+                        <span className="button-text">
+            {editMode ? 'Cancel' : 'Edit Profile'}
+        </span>
                     </motion.button>
                 )}
             </div>
@@ -289,7 +261,7 @@ const ProfilePage = () => {
             </AnimatePresence>
 
             {!profile ? (
-                <div className="error-alert">Профиль не найден</div>
+                <div className="error-alert">Profile not found</div>
             ) : (
                 <>
                     <div className="profile-header">
@@ -299,9 +271,9 @@ const ProfilePage = () => {
                             transition={{ delay: 0.2 }}
                             className="neon-title"
                         >
-                            <span>
-                                <i className="icon-user"></i> {profile?.firstName || 'Пользователь'}
-                            </span>
+              <span>
+                <i className="icon-user"></i> {profile?.firstName || 'User'}
+              </span>
                         </motion.h1>
                     </div>
 
@@ -321,7 +293,7 @@ const ProfilePage = () => {
                                     >
                                         <img
                                             src={profile.avatarUrl || `${API_BASE_URL}/default-avatar.png`}
-                                            alt="Аватар пользователя"
+                                            alt="User avatar"
                                         />
                                     </motion.div>
                                 )}
@@ -332,7 +304,7 @@ const ProfilePage = () => {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        <i className="icon-edit"></i> Изменить аватар
+                                        <i className="icon-edit"></i> Change avatar
                                     </motion.button>
                                 )}
                                 <div className="violet-glow"></div>
@@ -367,7 +339,7 @@ const ProfilePage = () => {
                                                 onClick={handleAddFriend}
                                                 whileHover={{ scale: 1.05 }}
                                             >
-                                                <i className="icon-user-plus"></i> Добавить в друзья
+                                                <i className="icon-user-plus"></i> Add Friend
                                             </motion.button>
                                         )}
 
@@ -376,28 +348,28 @@ const ProfilePage = () => {
                                         </h2>
                                         <div className="bio-box">
                                             <i className="icon-quote"></i>
-                                            <p>{profile.bio || 'Нет информации о себе'}</p>
+                                            <p>{profile.bio || 'No bio provided'}</p>
                                         </div>
 
                                         <div className="details-grid">
                                             <div className="detail-card">
                                                 <i className="icon-sport"></i>
                                                 <div>
-                                                    <h3>Вид спорта</h3>
-                                                    <p>{profile.sportType || 'Не указан'}</p>
+                                                    <h3>Sport</h3>
+                                                    <p>{profile.sportType || 'Not specified'}</p>
                                                 </div>
                                             </div>
                                             <div className="detail-card">
                                                 <i className="icon-globe"></i>
                                                 <div>
-                                                    <h3>Вебсайт</h3>
+                                                    <h3>Website</h3>
                                                     <a
                                                         href={profile.website || '#'}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="cyber-link"
                                                     >
-                                                        {profile.website || 'Не указан'}
+                                                        {profile.website || 'Not specified'}
                                                     </a>
                                                 </div>
                                             </div>
@@ -421,6 +393,7 @@ const ProfilePage = () => {
                                 onUpload={handlePhotoUpload}
                                 onDelete={handleDeletePhoto}
                                 onSetProfile={handleSetProfilePhoto}
+                                isOwner={currentUserId === profileUserId}
                             />
                         </div>
                     </div>

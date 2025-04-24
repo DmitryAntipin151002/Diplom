@@ -4,7 +4,9 @@ import UserService.dto.*;
 import UserService.exception.ProfileNotFoundException;
 import UserService.exception.UserNotFoundException;
 import UserService.model.User;
+import UserService.model.UserPhoto;
 import UserService.model.UserProfile;
+import UserService.repository.UserPhotoRepository;
 import UserService.repository.UserProfileRepository;
 import UserService.repository.UserRepository;
 import UserService.service.FileStorageService;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
 public class ProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
     private final UserProfileRepository profileRepository;
-    private final FileStorageService fileStorageService;
+    private final UserPhotoRepository userPhotoRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -54,6 +57,27 @@ public class ProfileServiceImpl implements ProfileService {
     public void updateAvatarPath(UUID userId, String filePath) {
         UserProfile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new ProfileNotFoundException(userId));
+
+        // Если новый аватар из галереи, помечаем его как профильный
+        if (filePath.startsWith("/api/files/")) {
+            String filePathWithoutPrefix = filePath.replace("/api/files/", "");
+
+            // Используем существующий метод репозитория с userId для безопасности
+            Optional<UserPhoto> photoOpt = userPhotoRepository.findByUserIdAndPhotoUrlContaining(
+                    userId,
+                    filePathWithoutPrefix
+            );
+
+            if (photoOpt.isPresent()) {
+                UserPhoto photo = photoOpt.get();
+
+                // Сброс предыдущей профильной фото
+                userPhotoRepository.resetProfilePhoto(userId);
+
+                // Установка новой профильной фото через репозиторий
+                userPhotoRepository.setAsProfilePhoto(userId, photo.getId());
+            }
+        }
 
         profile.setAvatarUrl(filePath);
         profile.setUpdatedAt(LocalDateTime.now());

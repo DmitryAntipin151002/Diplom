@@ -1,10 +1,13 @@
 package UserService.service.impl;
 
+import UserService.exception.ProfileNotFoundException;
 import UserService.exception.UserNotFoundException;
 import UserService.exception.UserPhotoNotFoundException;
 import UserService.model.User;
 import UserService.model.UserPhoto;
+import UserService.model.UserProfile;
 import UserService.repository.UserPhotoRepository;
+import UserService.repository.UserProfileRepository;
 import UserService.repository.UserRepository;
 import UserService.service.FileStorageService;
 import UserService.service.UserPhotoService;
@@ -24,6 +27,7 @@ public class UserPhotoServiceImpl implements UserPhotoService {
     private final UserPhotoRepository photoRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final UserProfileRepository userProfileRepository;
 
     @Override
     @Transactional
@@ -87,8 +91,15 @@ public class UserPhotoServiceImpl implements UserPhotoService {
         UserPhoto newProfilePhoto = photoRepository.findById(photoId)
                 .orElseThrow(() -> new UserPhotoNotFoundException(photoId));
         newProfilePhoto.setProfilePhoto(true);
+        UserPhoto savedPhoto = photoRepository.save(newProfilePhoto);
 
-        return photoRepository.save(newProfilePhoto);
+        // Обновляем аватар в профиле
+        UserProfile profile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new ProfileNotFoundException(userId));
+        profile.setAvatarUrl(savedPhoto.getPhotoUrl());
+        userProfileRepository.save(profile);
+
+        return savedPhoto;
     }
 
     @Override

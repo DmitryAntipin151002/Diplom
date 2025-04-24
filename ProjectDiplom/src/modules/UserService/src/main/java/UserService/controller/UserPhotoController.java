@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @CrossOrigin(origins = "*")
@@ -22,13 +23,9 @@ import java.util.UUID;
 @RequestMapping("/api/users/{userId}/photos")
 @RequiredArgsConstructor
 public class UserPhotoController {
-
     private final UserPhotoService userPhotoService;
     private final FileStorageService fileStorageService;
 
-    /**
-     * Загрузить фотографию по URL (если нужно сохранить эту функциональность)
-     */
     @PostMapping
     public ResponseEntity<UserPhoto> uploadPhotoByUrl(
             @PathVariable UUID userId,
@@ -38,15 +35,11 @@ public class UserPhotoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(photo);
     }
 
-    /**
-     * Загрузить фотографию с файлом
-     */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PhotoResponseDto> uploadPhotoFile(
             @PathVariable UUID userId,
             @RequestPart("file") MultipartFile file,
             @RequestParam(required = false) String description) {
-
         try {
             UserPhoto photo = userPhotoService.uploadPhotoFile(userId, file, description);
 
@@ -63,55 +56,74 @@ public class UserPhotoController {
         }
     }
 
-    /**
-     * Удалить фотографию
-     */
     @DeleteMapping("/{photoId}")
     public ResponseEntity<Void> deletePhoto(
             @PathVariable UUID userId,
             @PathVariable UUID photoId) {
-
-        // 1. Получаем фото для проверки прав доступа
+        // Проверяем, не используется ли фото как аватар
         UserPhoto photo = userPhotoService.getPhoto(userId, photoId);
-
-        // 2. Удаляем файл если он локальный
-        if (photo.getPhotoUrl().startsWith("/api/files/")) {
-            String filePath = photo.getPhotoUrl().replace("/api/files/" + userId + "/", "");
-            fileStorageService.delete(userId + "/" + filePath);
+        if (photo.isProfilePhoto()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot delete photo used as profile avatar"
+            );
         }
 
-        // 3. Удаляем запись из БД
+        // Удаляем файл если он локальный
+        if (photo.getPhotoUrl().startsWith("/api/files/")) {
+            String filePath = photo.getPhotoUrl().replace("/api/files/", "");
+            fileStorageService.delete(filePath);
+        }
+
+        // Удаляем запись из БД
         userPhotoService.deletePhoto(userId, photoId);
 
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Установить как профильную
-     */
     @PatchMapping("/{photoId}/profile")
-    public ResponseEntity<UserPhoto> setAsProfilePhoto(
+    public ResponseEntity<PhotoResponseDto> setAsProfilePhoto(
             @PathVariable UUID userId,
             @PathVariable UUID photoId) {
         UserPhoto photo = userPhotoService.setAsProfilePhoto(userId, photoId);
-        return ResponseEntity.ok(photo);
+
+        PhotoResponseDto response = PhotoResponseDto.builder()
+                .id(photo.getId())
+                .photoUrl(photo.getPhotoUrl())
+                .description(photo.getDescription())
+                .isProfilePhoto(photo.isProfilePhoto())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
-    /**
-     * Получить все фотографии
-     */
     @GetMapping
-    public ResponseEntity<List<UserPhoto>> getUserPhotos(@PathVariable UUID userId) {
+    public ResponseEntity<List<PhotoResponseDto>> getUserPhotos(@PathVariable UUID userId) {
         List<UserPhoto> photos = userPhotoService.getUserPhotos(userId);
-        return ResponseEntity.ok(photos);
+
+        List<PhotoResponseDto> response = photos.stream()
+                .map(photo -> PhotoResponseDto.builder()
+                        .id(photo.getId())
+                        .photoUrl(photo.getPhotoUrl())
+                        .description(photo.getDescription())
+                        .isProfilePhoto(photo.isProfilePhoto())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
 
-    /**
-     * Получить профильную фотографию
-     */
     @GetMapping("/profile")
-    public ResponseEntity<UserPhoto> getProfilePhoto(@PathVariable UUID userId) {
+    public ResponseEntity<PhotoResponseDto> getProfilePhoto(@PathVariable UUID userId) {
         UserPhoto photo = userPhotoService.getProfilePhoto(userId);
-        return ResponseEntity.ok(photo);
+
+        PhotoResponseDto response = PhotoResponseDto.builder()
+                .id(photo.getId())
+                .photoUrl(photo.getPhotoUrl())
+                .description(photo.getDescription())
+                .isProfilePhoto(photo.isProfilePhoto())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }

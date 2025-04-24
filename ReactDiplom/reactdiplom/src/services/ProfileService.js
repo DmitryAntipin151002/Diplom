@@ -1,9 +1,10 @@
+// services/ProfileService.js
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
 
 const getAuthHeader = () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('isFirstEnterToken');
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     return {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -14,65 +15,86 @@ const getAuthHeader = () => {
 
 export const getProfile = async (userId) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/profiles/${userId}`, getAuthHeader());
-        return response.data;
+        const response = await axios.get(`${API_BASE_URL}/api/profiles/${userId}`, getAuthHeader());
+        return {
+            ...response.data,
+            avatarUrl: response.data.avatarUrl
+                ? `${API_BASE_URL}${response.data.avatarUrl}`
+                : `${API_BASE_URL}/default-avatar.png`
+        };
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Не удалось загрузить профиль');
+        throw new Error(error.response?.data?.message || 'Failed to load profile');
     }
 };
 
 export const updateProfile = async (userId, data) => {
     try {
         const response = await axios.put(
-            `${API_BASE_URL}/profiles/${userId}`,
-            {
-                ...data,
-                sportType: data.sportType // Явно указываем поле
-            },
+            `${API_BASE_URL}/api/profiles/${userId}`,
+            data,
+            getAuthHeader()
         );
         return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Не удалось обновить профиль');
+        throw new Error(error.response?.data?.message || 'Failed to update profile');
     }
 };
 
 export const getUserStats = async (userId) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/profiles/${userId}/stats`,
+            `${API_BASE_URL}/api/profiles/${userId}/stats`,
             getAuthHeader()
         );
         return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Не удалось загрузить статистику');
+        throw new Error(error.response?.data?.message || 'Failed to load stats');
     }
 };
 
 export const uploadAvatar = async (userId, file) => {
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
 
-    const response = await axios.post(
-        `${API_BASE_URL}/api/users/${userId}/avatar`,
-        formData,
-        {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        }
-    );
-    return response.data.avatarUrl;
+        const response = await axios.post(
+            `${API_BASE_URL}/api/profiles/${userId}/avatar`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`
+                }
+            }
+        );
+        return `${API_BASE_URL}${response.data}`;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Failed to upload avatar');
+    }
 };
 
 export const createProfileIfNotExists = async (userId) => {
     try {
         const response = await axios.post(
-            `${API_BASE_URL}/profiles/${userId}/create`,
+            `${API_BASE_URL}/api/profiles/${userId}/create`,
             {},
             getAuthHeader()
         );
         return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Не удалось создать профиль');
+        throw new Error(error.response?.data?.message || 'Failed to create profile');
+    }
+};
+
+export const setAvatarFromGallery = async (userId, photoId) => {
+    try {
+        const response = await axios.patch(
+            `${API_BASE_URL}/api/profiles/${userId}/avatar-from-gallery/${photoId}`,
+            {},
+            getAuthHeader()
+        );
+        return `${API_BASE_URL}${response.data}`;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Failed to set avatar from gallery');
     }
 };

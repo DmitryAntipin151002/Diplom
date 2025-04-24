@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/profiles")
 @RequiredArgsConstructor
@@ -27,8 +26,6 @@ public class ProfileController {
     private final ProfileService profileService;
     private final FileStorageService fileStorageService;
     private final UserPhotoService userPhotoService;
-
-
 
     @GetMapping("/{userId}")
     public ResponseEntity<ProfileDto> getProfile(@PathVariable UUID userId) {
@@ -50,9 +47,7 @@ public class ProfileController {
     public ResponseEntity<String> updateAvatar(
             @PathVariable UUID userId,
             @RequestPart("avatar") MultipartFile avatarFile) {
-
         try {
-            // Валидация файла
             if (avatarFile.isEmpty()) {
                 throw new IllegalArgumentException("Avatar file cannot be empty");
             }
@@ -63,12 +58,12 @@ public class ProfileController {
 
             // Сохранение файла
             String filePath = fileStorageService.store(avatarFile, userId);
+            String avatarUrl = "/api/files/" + filePath;
 
             // Обновление профиля
-            profileService.updateAvatarPath(userId, filePath);
+            profileService.updateAvatarPath(userId, avatarUrl);
 
-            return ResponseEntity.ok(filePath);
-
+            return ResponseEntity.ok(avatarUrl);
         } catch (Exception e) {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -77,16 +72,10 @@ public class ProfileController {
         }
     }
 
-    /**
-     * Явное создание профиля для пользователя (если еще не существует)
-     * @param userId ID пользователя
-     * @return созданный или существующий профиль
-     */
     @PostMapping("/{userId}/create")
     @Transactional
     public ResponseEntity<ProfileDto> createProfileIfNotExists(@PathVariable UUID userId) {
         try {
-            // Явно вызываем метод создания/получения профиля
             ProfileDto profile = profileService.getOrCreateProfile(userId);
             return ResponseEntity.ok(profile);
         } catch (UserNotFoundException e) {
@@ -94,24 +83,25 @@ public class ProfileController {
         }
     }
 
-
-    @PatchMapping("/{photoId}/profile")
-    public ResponseEntity<?> setAsProfilePhoto(
+    @PatchMapping("/{userId}/avatar-from-gallery/{photoId}")
+    public ResponseEntity<String> setAvatarFromGallery(
             @PathVariable UUID userId,
             @PathVariable UUID photoId) {
-
-        if (photoId == null) {
-            return ResponseEntity.badRequest().body("Photo ID is required");
-        }
-
         try {
-            UserPhoto photo = userPhotoService.setAsProfilePhoto(userId, photoId);
-            return ResponseEntity.ok(photo);
-        } catch (Exception e) {
-        }
-        return null;
-    }
+            // Получаем фото из галереи
+            UserPhoto photo = userPhotoService.getPhoto(userId, photoId);
 
+            // Обновляем аватар в профиле
+            profileService.updateAvatarPath(userId, photo.getPhotoUrl());
+
+            return ResponseEntity.ok(photo.getPhotoUrl());
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Failed to set avatar from gallery: " + e.getMessage()
+            );
+        }
+    }
 
     @GetMapping("/{userId}/stats")
     public ResponseEntity<UserStatsDto> getUserStats(@PathVariable UUID userId) {
@@ -122,7 +112,6 @@ public class ProfileController {
     public ResponseEntity<List<ProfileDto>> searchProfiles(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int limit) {
-
         List<ProfileDto> results = profileService.searchProfiles(query, limit);
         return ResponseEntity.ok(results);
     }

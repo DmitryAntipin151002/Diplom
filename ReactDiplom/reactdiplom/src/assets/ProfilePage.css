@@ -379,3 +379,65 @@ body {
         margin-right: 8px;
     }
 }
+
+/* Добавить в конец файла */
+.gallery-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(112, 38, 224, 0.3);
+    margin-top: 1.5rem;
+}
+
+.cyber-button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+}
+
+.cyber-button.disabled:hover {
+    background: #1a0a2a;
+    box-shadow: none;
+}
+
+/* Стили для кнопки редактирования */
+.edit-mode {
+    background: rgba(112, 38, 224, 0.2);
+    border-color: #7026e0;
+}
+
+.edit-mode:hover {
+    background: rgba(112, 38, 224, 0.4);
+}
+
+.cancel-mode {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: #e74c3c;
+}
+
+.cancel-mode:hover {
+    background: rgba(231, 76, 60, 0.4);
+}
+
+.button-icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .button-text {
+        display: none;
+    }
+
+    .button-icon {
+        margin-right: 0;
+        font-size: 1.4em;
+    }
+
+    .cyber-button {
+        padding: 0.8rem;
+        min-width: 40px;
+    }
+}
