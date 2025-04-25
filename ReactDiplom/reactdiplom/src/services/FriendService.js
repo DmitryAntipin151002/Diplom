@@ -185,8 +185,8 @@ const FriendService = {
         try {
             const response = await axios.post(API_URL, null, {
                 params: {
-                    userId,
-                    relatedUserId,
+                    userId: userId,
+                    relatedUserId: relatedUserId,
                     type: 'BLOCK'
                 },
                 timeout: 10000,

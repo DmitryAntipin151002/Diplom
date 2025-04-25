@@ -57,15 +57,22 @@ const ProfileForm = ({ profile, onSave, onCancel }) => {
 
     return (
         <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="cyber-form"
             onSubmit={handleSubmit}
         >
             <div className="form-header">
                 <h2 className="neon-heading">Редактирование профиля</h2>
-                <div className="form-decoration"></div>
+                <button
+                    type="button"
+                    className="close-button"
+                    onClick={onCancel}
+                    aria-label="Закрыть"
+                >
+                    &times;
+                </button>
             </div>
 
             <div className="form-grid">

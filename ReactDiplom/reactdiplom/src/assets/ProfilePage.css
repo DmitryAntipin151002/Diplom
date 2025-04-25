@@ -29,23 +29,88 @@ body {
 }
 
 .header-actions {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
     display: flex;
-    gap: 1rem;
+    justify-content: flex-end;
+    gap: 15px;
+    padding: 20px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+}
+/* Стили для кнопки выхода */
+.logout-btn {
+    background: rgba(255, 59, 59, 0.2);
+    border: 1px solid #ff3a3a;
+    color: #ff6b6b;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.edit-profile-btn {
+    background: linear-gradient(135deg, #6a00ff 0%, #a100ff 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(106, 0, 255, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
     z-index: 10;
 }
 
-.logout-btn {
-    background: var(--neon-purple);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Roboto Mono', monospace;
-    transition: all 0.3s ease;
+.edit-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(106, 0, 255, 0.4);
+}
+
+.edit-profile-btn.active {
+    background: linear-gradient(135deg, #ff3a3a 0%, #ff6a6a 100%);
+}
+
+.edit-profile-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+    );
+    transition: 0.5s;
+}
+
+.edit-profile-btn:hover::before {
+    left: 100%;
+}
+
+/* Иконки */
+.icon-logout:before {
+    content: "🚪";
+}
+
+.icon-edit:before {
+    content: "✏️";
+}
+
+.icon-close:before {
+    content: "✕";
 }
 
 .logout-btn:hover {
@@ -352,9 +417,14 @@ body {
     }
 
     .header-actions {
-        position: static;
-        margin-bottom: 2rem;
+        display: flex;
         justify-content: flex-end;
+        gap: 15px;
+        padding: 20px;
+        position: fixed; /* Изменено с absolute на fixed */
+        top: 0;
+        right: 0;
+        z-index: 1000; /* Увеличено значение z-index */
     }
 
     .friend-btn {
@@ -440,4 +510,51 @@ body {
         padding: 0.8rem;
         min-width: 40px;
     }
+}
+
+/* Добавьте в конец файла */
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.edit-modal-content {
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #6a00ff;
+    box-shadow: 0 0 20px rgba(106, 0, 255, 0.5);
+}
+
+/* Улучшаем кнопку редактирования */
+.edit-mode {
+    background: linear-gradient(135deg, #6a00ff 0%, #a100ff 100%);
+}
+
+.cancel-mode {
+    background: linear-gradient(135deg, #ff3a3a 0%, #ff6a6a 100%);
+}
+
+/* Анимация для кнопки */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.edit-mode .button-icon {
+    animation: pulse 2s infinite;
 }

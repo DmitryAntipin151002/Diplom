@@ -209,10 +209,36 @@ const ProfilePage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-
-
             className="profile-page-container"
         >
+            <AnimatePresence>
+                {editMode && (
+                    <motion.div
+                        className="edit-modal-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setEditMode(false)}
+                    >
+                        <motion.div
+                            className="edit-modal-content"
+                            initial={{ y: -50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 50, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <ProfileForm
+                                profile={profile}
+                                onSave={(data) => {
+                                    handleSaveProfile(data);
+                                    setEditMode(false);
+                                }}
+                                onCancel={() => setEditMode(false)}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <div className="cyber-grid"></div>
             <div className="neon-line"></div>
 
@@ -222,24 +248,19 @@ const ProfilePage = () => {
                     onClick={handleLogout}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-
                 >
-                    Logout
+                    <i className="icon-logout"></i> Logout
                 </motion.button>
 
-                {currentUserId === profileUserId && (
+                { (
                     <motion.button
-                        className={`cyber-button ${editMode ? 'cancel-mode' : 'edit-mode'}`}
+                        className={`edit-profile-btn ${editMode ? 'active' : ''}`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setEditMode(!editMode)}
                     >
-        <span className="button-icon">
-            {editMode ? '✕' : '✎'}
-        </span>
-                        <span className="button-text">
-            {editMode ? 'Cancel' : 'Edit Profile'}
-        </span>
+                        <i className={`icon-${editMode ? 'close' : 'edit'}`}></i>
+                        {editMode ? 'Cancel Editing' : 'Edit Profile'}
                     </motion.button>
                 )}
             </div>
