@@ -448,3 +448,12 @@
     font-size: 0.9rem;
     color: #666;
 }
+
+.chat-time:empty::before {
+    content: "--:--";
+}
+
+.last-message:empty::before {
+    content: "No messages yet";
+    color: #999;
+}

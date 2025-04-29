@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import Message from '../Chat_Component/Message';
 import MessageInput from '../Chat_Component/MessageInput';
 import ParticipantList from '../Chat_Component/ParticipantList';
-import { getMessages, sendMessage, markMessagesAsRead } from '../../services/messageService';
-import { sendMessage as sendWsMessage } from '../../utils/socket';
+import { getMessages, markMessagesAsRead } from '../../services/messageService';
+import { disconnectWebSocket, sendMessage as sendWsMessage, setupWebSocket } from '../../utils/socket';
 
 const ChatWindow = ({ chat, messages, userId }) => {
     const [messageList, setMessageList] = useState(messages);
     const [isParticipantListOpen, setIsParticipantListOpen] = useState(false);
     const messagesEndRef = useRef(null);
+    const currentUserId = userId || localStorage.getItem('userId');
 
     useEffect(() => {
-        setMessageList(messages);
-        if (chat?.id) {
+        if (chat?.id && userId) {
             markMessagesAsRead(chat.id, userId).catch(console.error);
         }
     }, [messages, chat, userId]);
@@ -21,20 +21,32 @@ const ChatWindow = ({ chat, messages, userId }) => {
         scrollToBottom();
     }, [messageList]);
 
+    useEffect(() => {
+        const wsCallbacks = {
+            onMessage: (msg) => {
+                setMessageList(prev => [...prev, msg]);
+            }
+        };
+
+        setupWebSocket(wsCallbacks);
+
+        return () => disconnectWebSocket();
+    }, []);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const handleSendMessage = (content) => {
-        const messageRequest = {
-            chatId: chat.id,
-            senderId: userId,
-            content: content
-        };
-        sendWsMessage(messageRequest); // Только через WebSocket
+    const handleSendMessage = (messageData) => {
+        try {
+            sendWsMessage(messageData);
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            alert('Ошибка отправки сообщения');
+        }
     };
 
-    if (!chat) return <div className="chat-window empty">Select a chat to start messaging</div>;
+    if (!chat) return <div className="chat-window empty">Выберите чат для начала общения</div>;
 
     return (
         <div className="chat-window">
@@ -44,7 +56,7 @@ const ChatWindow = ({ chat, messages, userId }) => {
                     onClick={() => setIsParticipantListOpen(!isParticipantListOpen)}
                     className="participants-toggle"
                 >
-                    {isParticipantListOpen ? 'Hide Participants' : `Show Participants (${chat.participantIds.length})`}
+                    {isParticipantListOpen ? 'Скрыть участников' : `Участники (${chat.participantIds.length})`}
                 </button>
             </div>
 
@@ -67,7 +79,10 @@ const ChatWindow = ({ chat, messages, userId }) => {
                             ))}
                             <div ref={messagesEndRef} />
                         </div>
-                        <MessageInput onSend={handleSendMessage} />
+                        <MessageInput
+                            onSend={handleSendMessage}
+                            chat={chat}
+                        />
                     </>
                 )}
             </div>

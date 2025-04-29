@@ -112,6 +112,7 @@ const ChatPage = () => {
                 <ChatWindow
                     chat={currentChat}
                     messages={messages}
+                    userId={localStorage.getItem('userId')}
                 />
             ) : (
                 <div className="chat-placeholder">

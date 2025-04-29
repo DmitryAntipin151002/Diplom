@@ -12,26 +12,17 @@ const ChatList = ({ chats, currentChatId, onCreateChat }) => {
     };
 
     const formatLastMessage = (message) => {
-        if (!message) return 'No messages yet';
+        if (!message || !message.content) return 'No messages yet';
         return message.content.length > 30
             ? `${message.content.substring(0, 30)}...`
             : message.content;
-    };
-
-    const getUnreadCount = (chat) => {
-        return chat.unreadCount > 0 && (
-            <span className="unread-count">{chat.unreadCount}</span>
-        );
     };
 
     return (
         <div className="chat-list-container">
             <div className="chat-list-header">
                 <h2>Chats</h2>
-                <button
-                    onClick={onCreateChat}
-                    className="new-chat-button"
-                >
+                <button onClick={onCreateChat} className="new-chat-button">
                     + New Chat
                 </button>
             </div>
@@ -51,10 +42,12 @@ const ChatList = ({ chats, currentChatId, onCreateChat }) => {
                             <div className="chat-header">
                                 <h3 className="chat-name">{chat.name}</h3>
                                 <span className="chat-time">
-                                    {new Date(chat.lastMessage?.sentAt).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
+                                    {chat.lastMessage?.sentAt
+                                        ? new Date(chat.lastMessage.sentAt).toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })
+                                        : '--:--'}
                                 </span>
                             </div>
 
@@ -62,7 +55,9 @@ const ChatList = ({ chats, currentChatId, onCreateChat }) => {
                                 <p className="last-message">
                                     {formatLastMessage(chat.lastMessage)}
                                 </p>
-                                {getUnreadCount(chat)}
+                                {chat.unreadCount > 0 && (
+                                    <span className="unread-count">{chat.unreadCount}</span>
+                                )}
                             </div>
                         </div>
                     </div>
