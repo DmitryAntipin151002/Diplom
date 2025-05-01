@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
 
 const getAuthConfig = () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('isFirstEnterToken');
     return {
         headers: {
             Authorization: `Bearer ${token}`
@@ -36,11 +36,12 @@ export const markMessagesAsRead = async (chatId, userId) => {
     }
 };
 
-export const editMessage = async (messageId, newContent, editorId) => {
+export const editMessage = async (messageId, newContent) => {
+    const editorId = localStorage.getItem('userId'); // Берем ID из localStorage
     try {
         const response = await axios.put(
             `${API_BASE_URL}/api/messages/${messageId}`,
-            { newContent, editorId },
+            { newContent, editorId }, // Тело запроса
             getAuthConfig()
         );
         return response.data;
@@ -49,11 +50,15 @@ export const editMessage = async (messageId, newContent, editorId) => {
     }
 };
 
-export const deleteMessage = async (messageId, deleterId) => {
+export const deleteMessage = async (messageId) => {
+    const deleterId = localStorage.getItem('userId'); // Берем ID из localStorage
     try {
         await axios.delete(
-            `${API_BASE_URL}/api/messages/${messageId}?deleterId=${deleterId}`,
-            getAuthConfig()
+            `${API_BASE_URL}/api/messages/${messageId}`,
+            {
+                ...getAuthConfig(),
+                data: { deleterId } // Для DELETE передаем тело через data
+            }
         );
     } catch (error) {
         throw new Error(error.response?.data?.message || 'Failed to delete message');

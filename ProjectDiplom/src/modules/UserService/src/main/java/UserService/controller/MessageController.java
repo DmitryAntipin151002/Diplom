@@ -40,16 +40,21 @@ public class MessageController {
     @PutMapping("/api/messages/{messageId}")
     public ResponseEntity<MessageDto> editMessage(
             @PathVariable UUID messageId,
-            @RequestParam String newContent,
-            @RequestParam UUID editorId) throws MessageNotFoundException, AccessDeniedException {
-        return ResponseEntity.ok(messageService.editMessage(messageId, newContent, editorId));
+            @RequestBody EditMessageRequest request) { // Используем DTO для запроса
+        return ResponseEntity.ok(
+                messageService.editMessage(
+                        messageId,
+                        request.getNewContent(),
+                        request.getEditorId()
+                )
+        );
     }
 
     @DeleteMapping("/api/messages/{messageId}")
     public ResponseEntity<Void> deleteMessage(
             @PathVariable UUID messageId,
-            @RequestParam UUID deleterId) throws MessageNotFoundException, AccessDeniedException {
-        messageService.deleteMessage(messageId, deleterId);
+            @RequestBody DeleteMessageRequest request) { // Используем DTO для запроса
+        messageService.deleteMessage(messageId, request.getDeleterId());
         return ResponseEntity.ok().build();
     }
 

@@ -8,16 +8,19 @@ import UserService.service.ChatService;
 import UserService.service.MessageService;
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,33 +32,52 @@ public class ChatServiceImpl implements ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final EventRepository eventRepository;
     private final MessageService messageService;
+    private final ChatParticipantRepository chatParticipantRepository;
 
     @Override
     public ChatDto createChat(CreateChatRequest request) {
-        // Валидация
-        if (request.getParticipantIds().isEmpty()) {
-            throw new BadRequestException("Chat must have participants");
-        }
+        // Получаем тип чата
+        ChatTypeEntity chatType = chatTypeRepository.findByName(request.getType().name())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid chat type: " + request.getType()));
 
+        // Создаем чат
         Chat chat = new Chat();
         chat.setName(request.getName());
-        chat.setType(chatTypeRepository.findByName(request.getType().name())
-                .orElseThrow(() -> new RuntimeException("Invalid chat type")));
+        chat.setType(chatType);
+        chat.setCreatedAt(LocalDateTime.now());
 
-        // Сохраняем чат перед добавлением участников
+        // Сохраняем чат
         Chat savedChat = chatRepository.save(chat);
 
-        // Создаем участников
-        List<ChatParticipant> participants = request.getParticipantIds().stream()
-                .map(userId -> {
-                    User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-                    return createParticipant(savedChat, user);
-                })
-                .collect(Collectors.toList());
+        // Добавляем создателя
+        User creator = userRepository.findById(request.getCreatorId())
+                .orElseThrow(() -> new UserNotFoundException("Creator not found: " + request.getCreatorId()));
 
-        savedChat.setParticipants(participants);
-        return convertToDto(chatRepository.save(savedChat));
+        addParticipant(savedChat, creator, true);
+
+        // Добавляем участников
+        request.getParticipantIds().forEach(userId -> {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+            addParticipant(savedChat, user, false);
+        });
+
+        return convertToDto(savedChat);
+    }
+
+    private void addParticipant(Chat chat, User user, boolean isAdmin) {
+        ChatParticipant participant = new ChatParticipant();
+        participant.setChat(chat);
+        participant.setUser(user);
+        participant.setJoinedAt(LocalDateTime.now());
+        participant.setAdmin(isAdmin);
+
+        // Явное сохранение
+        chatParticipantRepository.save(participant);
+
+        // Для двусторонней связи
+        chat.getParticipants().add(participant);
+        user.getChatParticipants().add(participant);
     }
 
     private ChatParticipant createParticipant(Chat chat, User user) {
@@ -76,12 +98,15 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatDto getChatInfo(UUID chatId, UUID userId) throws ChatNotFoundException{
+        log.info("Checking access for chat: {} and user: {}", chatId, userId);
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new ChatNotFoundException(chatId));
 
         if (!chatRepository.existsByIdAndParticipants_User_Id(chatId, userId)) {
             throw new ChatNotFoundException("User is not a participant of this chat");
         }
+        boolean exists = chatRepository.existsByIdAndParticipants_User_Id(chatId, userId);
+        log.debug("Participant exists: {}", exists);
 
         return convertToDto(chat);
     }

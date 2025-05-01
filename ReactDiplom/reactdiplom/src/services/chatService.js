@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
 
 const getAuthConfig = () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('isFirstEnterToken');
     return {
         headers: {
             Authorization: `Bearer ${token}`

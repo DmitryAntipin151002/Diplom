@@ -32,7 +32,8 @@ public class Chat {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
-
+    @JoinColumn(name = "creator_Id")
+    private UUID creatorId;
 
     @PostLoad
     private void init() {

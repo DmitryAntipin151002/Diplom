@@ -2,23 +2,44 @@ package UserService.controller;
 
 import UserService.dto.*;
 import UserService.exception.*;
+import UserService.model.Chat;
+import UserService.repository.ChatParticipantRepository;
+import UserService.repository.ChatRepository;
 import UserService.service.ChatService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chats")
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
+    private final ChatRepository chatRepository;
+    private final ChatParticipantRepository chatParticipantRepository;
 
     @PostMapping
-    public ResponseEntity<ChatDto> createChat(@RequestBody CreateChatRequest request) {
-        return ResponseEntity.ok(chatService.createChat(request));
+    public ResponseEntity<ChatDto> createChat(
+            @Valid @RequestBody CreateChatRequest request,
+            BindingResult result) {
+
+        if (result.hasErrors()) {
+            throw new IllegalArgumentException(
+                    result.getFieldErrors().stream()
+                            .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                            .collect(Collectors.joining(", "))
+            );
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(chatService.createChat(request));
     }
 
     @GetMapping("/user/{userId}")
@@ -29,8 +50,14 @@ public class ChatController {
     @GetMapping("/{chatId}")
     public ResponseEntity<ChatDto> getChatInfo(
             @PathVariable UUID chatId,
-            @RequestParam UUID userId) throws ChatNotFoundException {
-        return ResponseEntity.ok(chatService.getChatInfo(chatId, userId));
+            @RequestParam UUID userId) {
+
+        // 1. Проверяем существование чата
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new ChatNotFoundException(chatId));
+
+        // 3. Возвращаем данные чата
+        return   ResponseEntity.ok(chatService.getChatInfo(chatId, userId));
     }
 
     @PostMapping("/{chatId}/participants")

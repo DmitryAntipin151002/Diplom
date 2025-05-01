@@ -3,13 +3,17 @@ import Message from '../Chat_Component/Message';
 import MessageInput from '../Chat_Component/MessageInput';
 import ParticipantList from '../Chat_Component/ParticipantList';
 import { getMessages, markMessagesAsRead } from '../../services/messageService';
-import { disconnectWebSocket, sendMessage as sendWsMessage, setupWebSocket } from '../../utils/socket';
+import { sendMessage as sendWsMessage } from '../../utils/socket';
+import * as tempMessage from "date-fns/locale";
 
 const ChatWindow = ({ chat, messages, userId }) => {
     const [messageList, setMessageList] = useState(messages);
     const [isParticipantListOpen, setIsParticipantListOpen] = useState(false);
     const messagesEndRef = useRef(null);
-    const currentUserId = userId || localStorage.getItem('userId');
+
+    useEffect(() => {
+        setMessageList(messages);
+    }, [messages]);
 
     useEffect(() => {
         if (chat?.id && userId) {
@@ -21,46 +25,53 @@ const ChatWindow = ({ chat, messages, userId }) => {
         scrollToBottom();
     }, [messageList]);
 
-    useEffect(() => {
-        const wsCallbacks = {
-            onMessage: (msg) => {
-                setMessageList(prev => [...prev, msg]);
-            }
-        };
-
-        setupWebSocket(wsCallbacks);
-
-        return () => disconnectWebSocket();
-    }, []);
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const handleSendMessage = (messageData) => {
+    const handleSendMessage = async (messageData) => {
         try {
-            sendWsMessage(messageData);
+            // Оптимистичное обновление UI
+            const tempMessage = {
+                ...messageData,
+                id: Date.now().toString(), // временный ID
+                sentAt: new Date().toISOString(),
+                status: 'SENDING'
+            };
+
+            setMessageList(prev => [...prev, tempMessage]);
+            scrollToBottom();
+
+            // Отправка через WebSocket
+            await sendWsMessage(messageData);
+
+            // Обновляем статус сообщения после успешной отправки
+            setMessageList(prev => prev.map(msg =>
+                msg.id === tempMessage.id ? {...msg, status: 'SENT'} : msg
+            ));
         } catch (error) {
             console.error('Failed to send message:', error);
-            alert('Ошибка отправки сообщения');
+            setMessageList(prev => prev.map(msg =>
+                msg.id === tempMessage.id ? {...msg, status: 'ERROR'} : msg
+            ));
         }
     };
 
-    if (!chat) return <div className="chat-window empty">Выберите чат для начала общения</div>;
+    if (!chat) return <div className="cyber-chat-window empty">Select a chat to start messaging</div>;
 
     return (
-        <div className="chat-window">
-            <div className="chat-header">
+        <div className="cyber-chat-window">
+            <div className="cyber-chat-header">
                 <h2>{chat.name}</h2>
                 <button
                     onClick={() => setIsParticipantListOpen(!isParticipantListOpen)}
-                    className="participants-toggle"
+                    className="cyber-button participants-toggle"
                 >
-                    {isParticipantListOpen ? 'Скрыть участников' : `Участники (${chat.participantIds.length})`}
+                    {isParticipantListOpen ? 'Hide participants' : `Participants (${chat.participantIds.length})`}
                 </button>
             </div>
 
-            <div className="chat-content">
+            <div className="cyber-chat-content">
                 {isParticipantListOpen ? (
                     <ParticipantList
                         chatId={chat.id}
@@ -69,7 +80,7 @@ const ChatWindow = ({ chat, messages, userId }) => {
                     />
                 ) : (
                     <>
-                        <div className="messages-container">
+                        <div className="cyber-messages-container">
                             {messageList.map(message => (
                                 <Message
                                     key={message.id}

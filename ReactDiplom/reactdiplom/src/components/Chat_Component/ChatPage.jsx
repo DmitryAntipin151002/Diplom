@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import ChatList from '../Chat_Component/ChatList';
 import ChatWindow from '../Chat_Component/ChatWindow';
 import CreateChatModal from '../Chat_Component/CreateChatModal';
@@ -10,6 +10,7 @@ import '../../assets/ChatStyles.css';
 
 const ChatPage = () => {
     const { chatId } = useParams();
+    const navigate = useNavigate();
     const [chats, setChats] = useState([]);
     const [currentChat, setCurrentChat] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -24,10 +25,10 @@ const ChatPage = () => {
         if (!token || !userId) {
             setError('Authentication required');
             setLoading(false);
+            navigate('/login');
             return;
         }
 
-        // Загрузка чатов
         const loadData = async () => {
             try {
                 const userChats = await getChats(userId);
@@ -46,11 +47,36 @@ const ChatPage = () => {
             }
         };
 
-        // WebSocket подключение
         const client = setupWebSocket(token, {
-            onMessage: handleNewMessage,
-            onChatUpdate: handleChatUpdate,
-            onParticipantUpdate: handleParticipantUpdate
+            onMessage: (message) => {
+                if (message.chatId === currentChat?.id) {
+                    setMessages(prev => [...prev, message]);
+                }
+                setChats(prev => prev.map(chat =>
+                    chat.id === message.chatId ? {...chat, lastMessage: message} : chat
+                ));
+            },
+            onChatUpdate: (updatedChat) => {
+                setChats(prev => prev.map(chat =>
+                    chat.id === updatedChat.id ? updatedChat : chat
+                ));
+                if (currentChat?.id === updatedChat.id) {
+                    setCurrentChat(updatedChat);
+                }
+            },
+            onParticipantUpdate: ({ chatId, participantIds, added }) => {
+                setChats(prev => prev.map(chat => {
+                    if (chat.id === chatId) {
+                        return {
+                            ...chat,
+                            participantIds: added
+                                ? [...chat.participantIds, ...participantIds]
+                                : chat.participantIds.filter(id => !participantIds.includes(id))
+                        };
+                    }
+                    return chat;
+                }));
+            }
         });
 
         loadData();
@@ -58,50 +84,19 @@ const ChatPage = () => {
         return () => {
             disconnectWebSocket();
         };
-    }, [chatId]);
-
-    const handleNewMessage = (message) => {
-        if (message.chatId === currentChat?.id) {
-            setMessages(prev => [...prev, message]);
-        }
-        setChats(prev => prev.map(chat =>
-            chat.id === message.chatId ? {...chat, lastMessage: message} : chat
-        ));
-    };
-
-    const handleChatUpdate = (updatedChat) => {
-        setChats(prev => prev.map(chat =>
-            chat.id === updatedChat.id ? updatedChat : chat
-        ));
-        if (currentChat?.id === updatedChat.id) {
-            setCurrentChat(updatedChat);
-        }
-    };
-
-    const handleParticipantUpdate = ({ chatId, participantIds, added }) => {
-        setChats(prev => prev.map(chat => {
-            if (chat.id === chatId) {
-                return {
-                    ...chat,
-                    participantIds: added
-                        ? [...chat.participantIds, ...participantIds]
-                        : chat.participantIds.filter(id => !participantIds.includes(id))
-                };
-            }
-            return chat;
-        }));
-    };
+    }, [chatId, navigate]);
 
     const handleChatCreated = (newChat) => {
         setChats(prev => [...prev, newChat]);
         setCurrentChat(newChat);
+        navigate(`/chats/${newChat.id}`);
     };
 
-    if (loading) return <div className="loading">Loading chats...</div>;
-    if (error) return <div className="error">{error}</div>;
+    if (loading) return <div className="cyber-loader">Loading chats...</div>;
+    if (error) return <div className="cyber-error">{error}</div>;
 
     return (
-        <div className="chat-container">
+        <div className="cyber-chat-container">
             <ChatList
                 chats={chats}
                 currentChatId={chatId}
@@ -115,7 +110,7 @@ const ChatPage = () => {
                     userId={localStorage.getItem('userId')}
                 />
             ) : (
-                <div className="chat-placeholder">
+                <div className="cyber-chat-placeholder">
                     <h2>Select a chat or create new one</h2>
                 </div>
             )}

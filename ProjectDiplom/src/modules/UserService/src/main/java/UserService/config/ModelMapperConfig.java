@@ -9,6 +9,8 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static org.modelmapper.Converters.Collection.map;
+
 @Configuration
 public class ModelMapperConfig {
 
@@ -37,14 +39,14 @@ public class ModelMapperConfig {
     }
 
     private void addCustomMappings(ModelMapper modelMapper) {
-        // Маппинг для отношений
         modelMapper.createTypeMap(UserRelationship.class, RelationshipDto.class)
-                .addMappings(m -> {
-
-                    m.map(src -> src.getType().getName(), RelationshipDto::setType);
-                    m.map(src -> src.getStatus().getName(), RelationshipDto::setStatus);
+                .addMappings(mapper -> {
+                    mapper.map(src -> src.getType().getName(), RelationshipDto::setType);
+                    mapper.map(src -> src.getStatus().getName(), RelationshipDto::setStatus);
+                    mapper.map(src -> src.getUser().getId(), RelationshipDto::setUserId);
+                    mapper.map(src -> src.getRelatedUser().getId(), RelationshipDto::setRelatedUserId);
                 });
+    }
 
         // Дополнительные маппинги можно добавлять здесь
     }
-}

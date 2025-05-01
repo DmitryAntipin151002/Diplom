@@ -8,22 +8,24 @@ const Message = ({ message, isCurrentUser, onEdit, onDelete }) => {
     const [editedContent, setEditedContent] = useState(message.content);
     const [showActions, setShowActions] = useState(false);
 
+    // Message.jsx
+
     const handleEdit = async () => {
         try {
-            await editMessage(message.id, editedContent, message.senderId);
+            await editMessage(message.id, editedContent); // Не передаем senderId
             onEdit(message.id, editedContent);
             setIsEditing(false);
         } catch (error) {
-            console.error('Failed to edit message:', error);
+
         }
     };
 
     const handleDelete = async () => {
         try {
-            await deleteMessage(message.id, message.senderId);
+            await deleteMessage(message.id); // Не передаем senderId
             onDelete(message.id);
         } catch (error) {
-            console.error('Failed to delete message:', error);
+
         }
     };
 
