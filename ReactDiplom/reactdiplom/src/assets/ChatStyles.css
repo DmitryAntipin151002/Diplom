@@ -362,3 +362,29 @@
     color: #ff3a3a;
     font-size: 1.5rem;
 }
+
+
+.edit-message-container {
+    position: relative;
+    animation: slide-in 0.3s ease;
+}
+
+@keyframes slide-in {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.edit-actions button {
+    background: #4CAF50;
+    border: none;
+    padding: 8px 15px;
+    margin: 5px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.edit-actions button:hover {
+    background: #45a049;
+}

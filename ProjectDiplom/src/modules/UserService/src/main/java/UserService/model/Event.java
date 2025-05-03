@@ -32,5 +32,8 @@ public class Event {
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private List<EventParticipant> participants;
+
+
+
 }
 

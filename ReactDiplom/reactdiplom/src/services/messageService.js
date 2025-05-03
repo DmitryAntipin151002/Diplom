@@ -49,18 +49,35 @@ export const editMessage = async (messageId, newContent) => {
         throw new Error(error.response?.data?.message || 'Failed to edit message');
     }
 };
-
 export const deleteMessage = async (messageId) => {
-    const deleterId = localStorage.getItem('userId'); // Берем ID из localStorage
+    const deleterId = localStorage.getItem('userId');
+
+    // Проверка наличия deleterId
+    if (!deleterId) {
+        throw new Error('User ID not found');
+    }
+
     try {
-        await axios.delete(
+        // Отправка DELETE-запроса с телом
+        const response = await axios.delete(
             `${API_BASE_URL}/api/messages/${messageId}`,
             {
-                ...getAuthConfig(),
-                data: { deleterId } // Для DELETE передаем тело через data
+                ...getAuthConfig(), // Заголовки авторизации
+                data: {deleterId} // Тело запроса
             }
         );
+
+        // Проверка успешных статусов
+        if (response.status !== 200 && response.status !== 204) {
+            throw new Error(`Server returned status: ${response.status}`);
+        }
+
+        return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Failed to delete message');
+        // Детализация ошибок
+        const errorMsg = error.response?.data?.message
+            || error.message
+            || 'Unknown error occurred';
+        throw new Error(`Message deletion failed: ${errorMsg}`);
     }
 };

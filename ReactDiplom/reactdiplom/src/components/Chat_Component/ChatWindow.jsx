@@ -3,7 +3,7 @@ import Message from '../Chat_Component/Message';
 import MessageInput from '../Chat_Component/MessageInput';
 import ParticipantList from '../Chat_Component/ParticipantList';
 import { getMessages, markMessagesAsRead } from '../../services/messageService';
-import { sendMessage as sendWsMessage } from '../../utils/socket';
+import {disconnectWebSocket, sendMessage as sendWsMessage, setupWebSocket} from '../../utils/socket';
 import * as tempMessage from "date-fns/locale";
 
 const ChatWindow = ({ chat, messages, userId }) => {
@@ -20,6 +20,65 @@ const ChatWindow = ({ chat, messages, userId }) => {
             markMessagesAsRead(chat.id, userId).catch(console.error);
         }
     }, [messages, chat, userId]);
+
+    useEffect(() => {
+        const loadMessages = async () => {
+            const messages = await getMessages(chat.id, userId);
+            setMessageList(messages.sort((a, b) =>
+                new Date(a.sentAt) - new Date(b.sentAt)
+            ));
+        };
+
+        if (chat?.id) loadMessages();
+    }, [chat?.id]);
+
+    useEffect(() => {
+        const onNewMessage = (newMessage) => {
+            setMessageList(prev => {
+                // Обновляем статус для оптимистичных сообщений
+                if (newMessage.tempId) {
+                    return prev.map(msg =>
+                        msg.tempId === newMessage.tempId ? { ...newMessage, status: 'SENT' } : msg
+                    );
+                }
+                // Добавляем новые сообщения с сервера
+                return [...prev, newMessage];
+            });
+        };
+
+        const handleDeleteMessage = (messageId, restore = false, confirmed = false) => {
+            setMessageList(prev => {
+                if (restore) {
+                    // Восстановление сообщения
+                    const original = messages.find(m => m.id === messageId);
+                    return original ? [...prev, original] : prev;
+                }
+
+                if (confirmed) {
+                    // Подтвержденное удаление - полное удаление
+                    return prev.filter(m => m.id !== messageId);
+                }
+
+                // Оптимистичное удаление с пометкой
+                return prev.map(m =>
+                    m.id === messageId ? {...m, status: 'PENDING_DELETE'} : m
+                );
+            });
+        };
+
+        const onMessageUpdate = (updatedMessage) => {
+            setMessageList(prev =>
+                prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+            );
+        };
+
+        setupWebSocket({
+            onMessage: onNewMessage,
+            onChatUpdate: onMessageUpdate
+        });
+
+        return () => disconnectWebSocket();
+    }, []);
 
     useEffect(() => {
         scrollToBottom();
@@ -86,6 +145,7 @@ const ChatWindow = ({ chat, messages, userId }) => {
                                     key={message.id}
                                     message={message}
                                     isCurrentUser={message.senderId === userId}
+
                                 />
                             ))}
                             <div ref={messagesEndRef} />

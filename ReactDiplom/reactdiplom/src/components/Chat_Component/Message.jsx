@@ -1,32 +1,43 @@
 import React, { useState } from 'react';
 import format from 'date-fns/format';
 import { ru } from 'date-fns/locale';
+import ConfirmationModal from '../Chat_Component/ConfirmationModal'; // Путь укажите корректный
 import { editMessage, deleteMessage } from '../../services/messageService';
 
 const Message = ({ message, isCurrentUser, onEdit, onDelete }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState(message.content);
     const [showActions, setShowActions] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // Message.jsx
 
     const handleEdit = async () => {
         try {
-            await editMessage(message.id, editedContent); // Не передаем senderId
+            await editMessage(message.id, editedContent);
             onEdit(message.id, editedContent);
             setIsEditing(false);
         } catch (error) {
-
+            console.error('Ошибка редактирования:', error);
+            alert('Не удалось изменить сообщение');
         }
     };
 
-    const handleDelete = async () => {
-        try {
-            await deleteMessage(message.id); // Не передаем senderId
-            onDelete(message.id);
-        } catch (error) {
 
+    const handleDeleteConfirm = async () => {
+        try {
+
+            const result = await deleteMessage(message.id);
+
+            if (result?.status === 'DELETED') {
+                onDelete(message.id, false, true); // Флаг успешного удаления
+            }
+        } catch (error) {
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
         }
+        setShowDeleteModal(false);
     };
 
     const renderContent = () => {
@@ -101,6 +112,14 @@ const Message = ({ message, isCurrentUser, onEdit, onDelete }) => {
             className={`message ${isCurrentUser ? 'current-user' : 'other-user'}`}
             onMouseEnter={() => setShowActions(true)}
             onMouseLeave={() => setShowActions(false)}
+
+        >
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onCancel={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteConfirm}
+                text="Вы уверены, что хотите удалить это сообщение?"
+            />
         >
             {renderReply()}
             {renderContent()}
@@ -118,7 +137,7 @@ const Message = ({ message, isCurrentUser, onEdit, onDelete }) => {
                 {isCurrentUser && showActions && message.status !== 'DELETED' && (
                     <div className="message-actions">
                         <button onClick={() => setIsEditing(true)}>✏️</button>
-                        <button onClick={handleDelete}>🗑️</button>
+                        <button onClick={() => setShowDeleteModal(true)}>🗑️</button> {/* Исправлено */}
                     </div>
                 )}
             </div>
