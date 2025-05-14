@@ -3,18 +3,21 @@ package AuthenticationService.domain.model;
 import AuthenticationService.domain.enums.StatusName;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 @Entity
 @Data
-@Table(name = "STATUS")
 @Accessors(chain = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "STATUS")
 public class Status {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    @Column(name = "NAME")
+    @Column(name = "NAME", nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
-    StatusName name;
+    private StatusName name;
 }
