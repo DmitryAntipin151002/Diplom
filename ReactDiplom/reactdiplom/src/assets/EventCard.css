@@ -1,0 +1,87 @@
+.event-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 300px;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sport-icon {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.card-header h3 {
+    margin: 0;
+    flex-grow: 1;
+    font-size: 18px;
+    color: #333;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-badge.planned {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge.ongoing {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-badge.completed {
+    background-color: #f1f8e9;
+    color: #689f38;
+}
+
+.status-badge.cancelled {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.card-body p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.card-footer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.details-btn {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.details-btn:hover {
+    background-color: #0d8bf2;
+}

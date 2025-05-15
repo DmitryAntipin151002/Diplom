@@ -1,12 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import './../assets/Dashboard.css';
+import {eventAPI} from "../services/eventService";
 
 const Dashboard = () => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const navigate = useNavigate();
     const profileRef = useRef(null);
     const userId = localStorage.getItem('userId');
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
 
     const games = [
         { id: 1, title: "Футбол в парке", location: "Центральный парк", date: "Сегодня 18:00", players: 12, maxPlayers: 16, sport: '⚽' },
@@ -19,7 +21,18 @@ const Dashboard = () => {
             if (profileRef.current && !profileRef.current.contains(event.target)) {
                 setShowProfileMenu(false);
             }
+            const loadUpcomingEvents = async () => {
+                try {
+                    const response = await eventAPI.getUpcomingEvents();
+                    setUpcomingEvents(response.data);
+                } catch (error) {
+                    console.error('Ошибка загрузки событий:', error);
+                }
+            };
+            loadUpcomingEvents();
         };
+
+
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
@@ -46,7 +59,7 @@ const Dashboard = () => {
                         <span className="nav-icon">🏠</span>
                         <span className="nav-text">Главная</span>
                     </li>
-                    <li onClick={() => handleNavigation('/my-games')}>
+                    <li onClick={() => handleNavigation('/my-events')}>
                         <span className="nav-icon">🎯</span>
                         <span className="nav-text">Мои игры</span>
                     </li>
@@ -164,30 +177,34 @@ const Dashboard = () => {
                             <span className="active-tag">🔥 Активно формируются</span>
                         </div>
                         <div className="games-container">
-                            {games.map(game => (
-                                <div key={game.id} className="game-card">
+                            {upcomingEvents.map(event => (
+                                <div key={event.id} className="game-card">
                                     <div className="game-header">
-                                        <h3>{game.title}</h3>
-                                        <span className="sport-icon">{game.sport}</span>
+                                        <h3>{event.title}</h3>
+                                        <span className="sport-icon">
+                                            {event.sportType === 'FOOTBALL' ? '⚽' :
+                                                event.sportType === 'BASKETBALL' ? '🏀' :
+                                                    event.sportType === 'VOLLEYBALL' ? '🏐' : '🎾'}
+                                        </span>
                                     </div>
                                     <div className="game-details">
                                         <div className="detail-item">
                                             <span className="detail-icon">📍</span>
-                                            <span>{game.location}</span>
+                                            <span>{event.location}</span>
                                         </div>
                                         <div className="detail-item">
                                             <span className="detail-icon">⏰</span>
-                                            <span>{game.date}</span>
+                                            <span>{event.date}</span>
                                         </div>
                                         <div className="players-progress">
                                             <div className="progress-container">
                                                 <div
                                                     className="progress-bar"
-                                                    style={{width: `${(game.players/game.maxPlayers)*100}%`}}
+                                                    style={{width: `${(event.players/event.maxPlayers)*100}%`}}
                                                 ></div>
                                             </div>
                                             <span className="players-count">
-                                                {game.players}/{game.maxPlayers} участников
+                                                {event.players}/{event.maxPlayers} участников
                                             </span>
                                         </div>
                                     </div>

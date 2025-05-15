@@ -12,6 +12,9 @@ import ProfilePage from "./components/Profile_Componemt/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FriendsPage from "./components/Profile_Componemt/FriendsPage";
 import ChatPage from "./components/Chat_Component/ChatPage"
+import EventForm from "./components/Event_Component/EventForm";
+import MyGames from "./components/Event_Component/MyGames";
+
 
 
 // Заглушки для страниц
@@ -44,6 +47,10 @@ function App() {
                     {/* Добавляем новые маршруты для чата */}
                     <Route path="/chats" element={<ChatPage />} />
                     <Route path="/chats/:chatId" element={<ChatPage />} />
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/events/create" element={<EventForm />} />
+                    <Route path="/my-events" element={<MyGames />} />
+
 
                 </Route>
 
