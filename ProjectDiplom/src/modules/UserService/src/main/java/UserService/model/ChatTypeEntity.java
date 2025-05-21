@@ -18,6 +18,9 @@ public class ChatTypeEntity {
     @Column(nullable = false, unique = true, length = 20)
     private String name;
 
+    @Column(name = "code", nullable = false, unique = true, length = 20)
+    private String code; // Добавьте это поле
+
     @Column(length = 255)
     private String description;
 }

@@ -1,0 +1,354 @@
+/* Общий контейнер страницы */
+.my-events-container {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* Внутренний контейнер */
+.content-wrapper {
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Заголовок */
+.header {
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1f2937;
+    text-align: left;
+    letter-spacing: -0.025em;
+}
+
+/* Группа кнопок */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.create-button, .home-button, .edit-button, .delete-button, .chat-button, .add-participant-button, .remove-participant-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.create-button {
+    background: linear-gradient(to right, #3b82f6, #4f46e5);
+}
+
+.create-button:hover {
+    background: linear-gradient(to right, #2563eb, #4338ca);
+    transform: translateY(-2px);
+}
+
+.home-button {
+    background: linear-gradient(to right, #6b7280, #4b5563);
+}
+
+.home-button:hover {
+    background: linear-gradient(to right, #4b5563, #374151);
+    transform: translateY(-2px);
+}
+
+.edit-button {
+    background: linear-gradient(to right, #10b981, #059669);
+}
+
+.edit-button:hover {
+    background: linear-gradient(to right, #059669, #047857);
+    transform: translateY(-2px);
+}
+
+.delete-button {
+    background: linear-gradient(to right, #ef4444, #dc2626);
+}
+
+.delete-button:hover {
+    background: linear-gradient(to right, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+}
+
+.chat-button {
+    background: linear-gradient(to right, #8b5cf6, #7c3aed);
+}
+
+.chat-button:hover {
+    background: linear-gradient(to right, #7c3aed, #6d28d9);
+    transform: translateY(-2px);
+}
+
+.add-participant-button {
+    background: linear-gradient(to right, #3b82f6, #4f46e5);
+    padding: 0.5rem 1rem;
+}
+
+.add-participant-button:hover {
+    background: linear-gradient(to right, #2563eb, #4338ca);
+    transform: translateY(-2px);
+}
+
+.remove-participant-button {
+    background: linear-gradient(to right, #ef4444, #dc2626);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.remove-participant-button:hover {
+    background: linear-gradient(to right, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+}
+
+/* Контейнер формы */
+.form-container {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+/* Сетка мероприятий */
+.events-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Карточка мероприятия */
+.event-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Заголовок карточки */
+.event-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.sport-icon {
+    font-size: 2rem;
+    margin-right: 0.75rem;
+}
+
+.event-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Детали мероприятия */
+.event-detail {
+    display: flex;
+    align-items: center;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.event-detail .icon {
+    margin-right: 0.5rem;
+}
+
+/* Статус мероприятия */
+.event-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 9999px;
+}
+
+.status-planned {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-ongoing {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-completed {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+
+.status-default {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+
+/* Сообщение об отсутствии мероприятий */
+.no-events {
+    text-align: center;
+    color: #6b7280;
+    font-size: 1.125rem;
+    grid-column: 1 / -1;
+}
+
+/* Стили для страницы мероприятия */
+.event-details {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.event-info {
+    margin-bottom: 2rem;
+}
+
+.event-info h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.event-description {
+    color: #4b5563;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.participants-section {
+    margin-top: 2rem;
+}
+
+.participants-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.add-participant {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.participant-input {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    flex-grow: 1;
+}
+
+.participant-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.participants-list {
+    list-style: none;
+    padding: 0;
+}
+
+.participant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.participant-item span {
+    color: #4b5563;
+    font-size: 0.95rem;
+}
+
+.no-participants {
+    color: #6b7280;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.loading, .error {
+    text-align: center;
+    color: #6b7280;
+    font-size: 1.125rem;
+    padding: 2rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .create-button, .home-button, .edit-button, .delete-button, .chat-button {
+        width: 100%;
+        padding: 0.75rem;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-details {
+        padding: 1.5rem;
+    }
+
+    .event-info h2 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.75rem;
+    }
+
+    .event-card {
+        padding: 1rem;
+    }
+
+    .event-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .event-details {
+        padding: 1rem;
+    }
+
+    .participant-input {
+        font-size: 0.875rem;
+    }
+}

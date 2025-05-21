@@ -5,7 +5,6 @@ package UserService.repository;
 import UserService.model.User;
 import UserService.model.UserProfile;
 import UserService.model.UserStats;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -52,4 +51,7 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, UUID>,
 
     @EntityGraph(attributePaths = {"user.photos"})
     Optional<UserProfile> findWithPhotosByUserId(UUID userId);
+    Optional<UserProfile> findByUserId(UUID userId);
+
+
 }

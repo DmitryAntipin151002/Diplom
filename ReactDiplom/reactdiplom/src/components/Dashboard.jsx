@@ -9,6 +9,7 @@ const Dashboard = () => {
     const profileRef = useRef(null);
     const userId = localStorage.getItem('userId');
     const [upcomingEvents, setUpcomingEvents] = useState([]);
+    const [allEvents, setAllEvents] = useState([]);
 
     const games = [
         { id: 1, title: "Футбол в парке", location: "Центральный парк", date: "Сегодня 18:00", players: 12, maxPlayers: 16, sport: '⚽' },
@@ -38,6 +39,18 @@ const Dashboard = () => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
+    }, []);
+
+    useEffect(() => {
+        const loadAllEvents = async () => {
+            try {
+                const response = await eventAPI.getAllEvents();
+                setAllEvents(response.data);
+            } catch (error) {
+                console.error('Ошибка загрузки всех событий:', error);
+            }
+        };
+        loadAllEvents();
     }, []);
 
     const handleLogout = () => {
@@ -154,6 +167,22 @@ const Dashboard = () => {
                     </button>
                 </section>
 
+                <section className="all-events-section">
+                    <h2>Все мероприятия</h2>
+                    <div className="events-grid">
+                        {allEvents.map(event => (
+                            <div key={event.id} className="event-card">
+                                <h3>{event.title}</h3>
+                                <p>{event.location}</p>
+                                <p>{new Date(event.startTime).toLocaleString()}</p>
+                                <button onClick={() => navigate(`/events/${event.id}`)}>
+                                    Подробнее
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
                 {/* Карта и список игр */}
                 <div className="content-grid">
                     <section className="game-map">
@@ -200,7 +229,7 @@ const Dashboard = () => {
                                             <div className="progress-container">
                                                 <div
                                                     className="progress-bar"
-                                                    style={{width: `${(event.players/event.maxPlayers)*100}%`}}
+                                                    style={{width: `${(event.players / event.maxPlayers) * 100}%`}}
                                                 ></div>
                                             </div>
                                             <span className="players-count">

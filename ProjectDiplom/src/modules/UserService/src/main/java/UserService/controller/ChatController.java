@@ -3,6 +3,7 @@ package UserService.controller;
 import UserService.dto.*;
 import UserService.exception.*;
 import UserService.model.Chat;
+import UserService.model.ChatType;
 import UserService.repository.ChatParticipantRepository;
 import UserService.repository.ChatRepository;
 import UserService.service.ChatService;
@@ -76,5 +77,24 @@ public class ChatController {
             @RequestParam UUID requesterId) throws ChatNotFoundException {
         chatService.removeParticipant(chatId, participantId, requesterId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/event/{eventId}")
+    public ResponseEntity<ChatDto> createEventChat(
+            @PathVariable UUID eventId,
+            @RequestParam String chatName, // Принимаем параметр из URL
+            @RequestHeader("X-User-Id") UUID creatorId) {
+
+        CreateChatRequest request = new CreateChatRequest();
+        request.setName(chatName);
+        request.setType(ChatType.EVENT); // Явно указываем тип чата
+        ChatDto chatDto = chatService.createEventChat(eventId, chatName, creatorId);
+
+        // Проверка наличия участников
+        if (chatDto.getParticipantIds().isEmpty()) {
+            throw new IllegalStateException("Участники не добавлены в чат!");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(chatService.createEventChat(eventId, chatName, creatorId));
     }
 }

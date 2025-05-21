@@ -22,4 +22,5 @@ public class ChatDto{
     private List<UUID> participantIds;
     private MessageDto lastMessage;
     private int unreadCount;
+
 }

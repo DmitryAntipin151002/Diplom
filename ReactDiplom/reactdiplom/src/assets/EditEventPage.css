@@ -1,0 +1,73 @@
+/* EditEventPage.css */
+.edit-event-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.page-header h1 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.8rem;
+}
+
+.form-wrapper {
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.loading-container,
+.error-container {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+}
+
+.error-container {
+    color: #e74c3c;
+}
+
+.error-container h2 {
+    margin-top: 0;
+}
+
+.return-button,
+.cancel-button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.return-button {
+    background: #3498db;
+    color: white;
+}
+
+.return-button:hover {
+    background: #2980b9;
+}
+
+.cancel-button {
+    background: #e74c3c;
+    color: white;
+}
+
+.cancel-button:hover {
+    background: #c0392b;
+}

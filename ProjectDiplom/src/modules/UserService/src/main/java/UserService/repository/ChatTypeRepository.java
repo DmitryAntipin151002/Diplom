@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface ChatTypeRepository extends JpaRepository<ChatTypeEntity, Long> {
     Optional<ChatTypeEntity> findByName(String name);
+
+    Optional<ChatTypeEntity> findByCode(String code);
+
+    boolean existsByCode(String code);
 }

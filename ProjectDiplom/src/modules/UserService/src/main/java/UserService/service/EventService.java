@@ -1,8 +1,7 @@
 // EventService.java
 package UserService.service;
 
-import UserService.dto.EventCreateDto;
-import UserService.dto.EventDto;
+import UserService.dto.*;
 import UserService.model.EventStatus;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,4 +18,12 @@ public interface EventService {
     List<EventDto> getUpcomingEvents();
     EventDto updateEventStatus(UUID eventId, EventStatus status);
     void deleteEvent(UUID eventId);
+    EventParticipantDto addParticipant(UUID eventId, UUID userId, UUID organizerId);
+    void removeParticipant(UUID eventId, UUID participantId, UUID requesterId);
+    List<EventParticipantDto> getParticipants(UUID eventId);
+     List<ProfileDto> searchPotentialParticipants(UUID eventId, String query);
+
+     ProfileDto getParticipantInfo(UUID participantId);
+    ChatDto createEventChat(UUID eventId, String chatName, UUID creatorId);
+    List<EventDto> getAllEvents();
 }

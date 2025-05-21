@@ -16,6 +16,7 @@ public class EventParticipantDto {
     private UUID userId;
     private String userName;
     private String userAvatar;
+    private String city;
     private EventParticipant.ParticipantStatus status;
     private EventParticipant.ParticipantRole role;
     private LocalDateTime joinedAt;

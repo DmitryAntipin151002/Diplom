@@ -24,8 +24,7 @@ public class CreateChatRequest {
     @NotNull(message = "Type is required")
     private ChatType type;
 
-    private UUID eventId; // Optional
-
+    private UUID eventId;
     @NotEmpty(message = "Participants list cannot be empty")
     private List<UUID> participantIds;
 }

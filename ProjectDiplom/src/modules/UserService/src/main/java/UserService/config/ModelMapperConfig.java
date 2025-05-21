@@ -1,6 +1,8 @@
 package UserService.config;
 
+import UserService.dto.ChatDto;
 import UserService.dto.RelationshipDto;
+import UserService.model.Chat;
 import UserService.model.ChatType;
 import UserService.model.UserRelationship;
 import org.modelmapper.AbstractConverter;
@@ -48,5 +50,5 @@ public class ModelMapperConfig {
                 });
     }
 
-        // Дополнительные маппинги можно добавлять здесь
+
     }

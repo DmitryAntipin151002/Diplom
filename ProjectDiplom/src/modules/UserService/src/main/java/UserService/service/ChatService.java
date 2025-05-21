@@ -55,4 +55,6 @@ public interface ChatService {
      */
     void removeParticipant(UUID chatId, UUID participantId, UUID requesterId)
             throws ChatNotFoundException;
+
+    ChatDto createEventChat(UUID eventId, String chatName, UUID creatorId);
 }

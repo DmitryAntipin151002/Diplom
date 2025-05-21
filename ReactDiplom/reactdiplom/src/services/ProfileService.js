@@ -98,3 +98,27 @@ export const setAvatarFromGallery = async (userId, photoId) => {
         throw new Error(error.response?.data?.message || 'Failed to set avatar from gallery');
     }
 };
+
+    export const searchProfiles = async (query, limit = 10) => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/api/profiles/search`,
+                {
+                    ...getAuthHeader(),
+                    params: {
+                        query: query,
+                        limit: limit
+                    }
+                }
+            );
+
+            return response.data.map(profile => ({
+                ...profile,
+                avatarUrl: profile.avatarUrl
+                    ? `${API_BASE_URL}${profile.avatarUrl}`
+                    : `${API_BASE_URL}/default-avatar.png`
+            }));
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to search profiles');
+        }
+    };

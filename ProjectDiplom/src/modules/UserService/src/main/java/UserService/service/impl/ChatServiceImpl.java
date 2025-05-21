@@ -1,11 +1,14 @@
 package UserService.service.impl;
 
+import UserService.config.ModelMapperConfig;
 import UserService.dto.*;
 import UserService.exception.*;
 import UserService.model.*;
 import UserService.repository.*;
 import UserService.service.ChatService;
+import UserService.service.EventService;
 import UserService.service.MessageService;
+import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +34,31 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final EventRepository eventRepository;
-    private final MessageService messageService;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ModelMapperConfig modelMapper;
+
+    @Override
+    @Transactional
+    public ChatDto createEventChat(UUID eventId, String chatName, UUID creatorId) {
+        // Создание чата
+        Chat chat = new Chat();
+        chat.setName(chatName);
+        chat.setEvent(eventRepository.findById(eventId).orElseThrow());
+        chat.setType(chatTypeRepository.findByCode("EVENT").orElseThrow());
+        Chat savedChat = chatRepository.save(chat); // Сохраняем чат сначала
+
+        // Добавление создателя в участники
+        User creator = userRepository.findById(creatorId).orElseThrow();
+
+        ChatParticipant participant = new ChatParticipant();
+        participant.setChat(savedChat); // Используем сохраненный чат с ID
+        participant.setUser(creator);
+        participant.setJoinedAt(LocalDateTime.now());
+
+        chatParticipantRepository.save(participant); // Сохраняем участника
+
+        return convertToDto(savedChat);
+    }
 
     @Override
     public ChatDto createChat(CreateChatRequest request) {
@@ -174,7 +200,7 @@ public class ChatServiceImpl implements ChatService {
         ChatDto dto = new ChatDto();
         dto.setId(chat.getId());
         dto.setName(chat.getName());
-        dto.setType(ChatType.valueOf(chat.getType().getName()));
+        dto.setType(ChatType.valueOf(chat.getType().getCode()));
         dto.setCreatedAt(chat.getCreatedAt());
         dto.setEventId(chat.getEvent() != null ? chat.getEvent().getId() : null);
         dto.setParticipantIds(chat.getParticipants().stream()
@@ -187,5 +213,22 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return dto;
+    }
+
+
+    @PostConstruct
+    public void initChatTypes() {
+        createChatTypeIfNotExists("EVENT", "Чат мероприятия");
+        createChatTypeIfNotExists("GROUP", "Групповой чат");
+        createChatTypeIfNotExists("PRIVATE", "Приватный чат");
+    }
+
+    private void createChatTypeIfNotExists(String code, String name) {
+        if (!chatTypeRepository.existsByCode(code)) {
+            ChatTypeEntity type = new ChatTypeEntity();
+            type.setCode(code);
+            type.setName(name);
+            chatTypeRepository.save(type);
+        }
     }
 }
