@@ -1,11 +1,12 @@
-/* EditEventPage.css */
+/* EditEventPage.css - Dark Theme */
 .edit-event-page {
-    max-width: 800px;
-    margin: 2rem auto;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 2rem;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #4200e1;
+    background-color: #1a202c;
+    min-height: 100vh;
 }
 
 .page-header {
@@ -14,60 +15,158 @@
     align-items: center;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 1px solid #4a5568;
 }
 
 .page-header h1 {
+    font-size: 2rem;
+    color: #81e6d9;
     margin: 0;
-    color: #2c3e50;
-    font-size: 1.8rem;
 }
 
-.form-wrapper {
-    padding: 1.5rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-}
-
-.loading-container,
-.error-container {
-    text-align: center;
-    padding: 3rem;
-    font-size: 1.2rem;
-}
-
-.error-container {
-    color: #e74c3c;
-}
-
-.error-container h2 {
-    margin-top: 0;
-}
-
-.return-button,
 .cancel-button {
-    padding: 0.8rem 1.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #9b2c2c;
+    color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.return-button {
-    background: #3498db;
-    color: white;
-}
-
-.return-button:hover {
-    background: #2980b9;
-}
-
-.cancel-button {
-    background: #e74c3c;
-    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .cancel-button:hover {
-    background: #c0392b;
+    background-color: #c53030;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(197, 48, 48, 0.4);
+}
+
+.form-wrapper {
+    background: #2d3748;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    padding: 2rem;
+    border: 1px solid #4a5568;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.2rem;
+    color: #a0aec0;
+}
+
+.error-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #2d3748;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    border: 1px solid #4a5568;
+}
+
+.error-container h2 {
+    color: #fc8181;
+    margin-top: 0;
+}
+
+.error-container p {
+    margin-bottom: 1.5rem;
+    color: #cbd5e0;
+}
+
+.return-button {
+    padding: 0.75rem 1.5rem;
+    background-color: #2b6cb0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.return-button:hover {
+    background-color: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.4);
+}
+
+/* Анимация загрузки */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    border: 4px solid #4a5568;
+    border-top: 4px solid #63b3ed;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-right: 1rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .edit-event-page {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .form-wrapper {
+        padding: 1.5rem;
+    }
+}
+
+/* Дополнительные стили для темной темы */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* Стили для формы внутри FormWrapper */
+.form-wrapper input,
+.form-wrapper textarea,
+.form-wrapper select {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+.form-wrapper input:focus,
+.form-wrapper textarea:focus,
+.form-wrapper select:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.3);
+}
+
+.form-wrapper label {
+    color: #a0aec0;
 }

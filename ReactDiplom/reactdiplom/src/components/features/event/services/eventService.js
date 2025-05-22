@@ -4,25 +4,32 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083';
 
 const getAuthConfig = () => {
     const token = localStorage.getItem('isFirstEnterToken');
-    if (!token) {
-        console.error('Токен авторизации отсутствует');
+    const userId = localStorage.getItem('userId');
+
+    // Валидация UUID
+    if (userId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+        console.error('Invalid UUID format in localStorage:', userId);
+        throw new Error('Invalid user ID format');
     }
+
     return {
         headers: {
-            Authorization: `Bearer ${token}`,
-            'X-User-Id': localStorage.getItem('userId') || ''
+            Authorization: token ? `Bearer ${token}` : '',
+            'X-User-Id': userId || ''
         }
     };
 };
-
 export const eventAPI = {
     createEvent: (organizerId, data) => {
-        console.log('Создание события:', { organizerId, data });
+        // Убедиться, что organizerId - строка UUID
+        if (!organizerId || typeof organizerId !== 'string') {
+            throw new Error('Invalid organizerId: must be a string UUID');
+        }
+
         return axios.post(`${API_BASE_URL}/api/events`, data, {
-            ...getAuthConfig(),
             headers: {
                 ...getAuthConfig().headers,
-                'X-User-Id': String(organizerId)
+                'X-User-Id': organizerId // Убрать String(), так как organizerId уже строка
             }
         });
     },

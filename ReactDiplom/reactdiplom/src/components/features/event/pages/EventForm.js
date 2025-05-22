@@ -1,9 +1,11 @@
+// components/EventForm.jsx
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { eventAPI } from '../services/eventService';
+import '../styles/EventForm.css';
 
-const EventForm = ({ onSuccess, initialData }) => {
+const EventForm = ({ onSuccess, initialData, onCancel }) => {
     const [formData, setFormData] = useState(initialData || {
         title: '',
         description: '',
@@ -14,6 +16,9 @@ const EventForm = ({ onSuccess, initialData }) => {
         statusCode: 'PLANNED'
     });
 
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
     const sportTypes = [
         { value: 'FOOTBALL', label: '⚽ Футбол' },
         { value: 'BASKETBALL', label: '🏀 Баскетбол' },
@@ -23,16 +28,34 @@ const EventForm = ({ onSuccess, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError(null);
+
         try {
-            const response = await eventAPI.createEvent(formData);
+            const organizerId = localStorage.getItem('userId');
+            let response;
+
+            if (initialData) {
+                response = await eventAPI.updateEvent(initialData.id, formData);
+            } else {
+                response = await eventAPI.createEvent(organizerId, formData);
+            }
+
             onSuccess(response.data);
         } catch (error) {
-            console.error('Ошибка создания события:', error);
+            console.error('Ошибка сохранения события:', error);
+            setError('Не удалось сохранить событие');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <form className="event-form" onSubmit={handleSubmit}>
+            <h2 className="form-title">{initialData ? 'Редактировать событие' : 'Создать новое событие'}</h2>
+
+            {error && <div className="error-message">{error}</div>}
+
             <div className="form-group">
                 <label>Название события:</label>
                 <input
@@ -40,6 +63,7 @@ const EventForm = ({ onSuccess, initialData }) => {
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                     required
+                    placeholder="Введите название события"
                 />
             </div>
 
@@ -48,6 +72,7 @@ const EventForm = ({ onSuccess, initialData }) => {
                 <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    placeholder="Опишите детали события"
                 />
             </div>
 
@@ -86,7 +111,10 @@ const EventForm = ({ onSuccess, initialData }) => {
                         selected={new Date(formData.startTime)}
                         onChange={(date) => setFormData({...formData, startTime: date})}
                         showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
                         dateFormat="dd.MM.yyyy HH:mm"
+                        placeholderText="Выберите дату и время"
                     />
                 </div>
 
@@ -96,7 +124,10 @@ const EventForm = ({ onSuccess, initialData }) => {
                         selected={new Date(formData.endTime)}
                         onChange={(date) => setFormData({...formData, endTime: date})}
                         showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
                         dateFormat="dd.MM.yyyy HH:mm"
+                        placeholderText="Выберите дату и время"
                     />
                 </div>
             </div>
@@ -108,12 +139,33 @@ const EventForm = ({ onSuccess, initialData }) => {
                     value={formData.location}
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                     required
+                    placeholder="Укажите место проведения"
                 />
             </div>
 
-            <button type="submit" className="submit-button">
-                {initialData ? 'Обновить событие' : 'Создать событие'}
-            </button>
+            <div className="form-actions">
+                <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={onCancel}
+                    disabled={loading}
+                >
+                    Отмена
+                </button>
+                <button
+                    type="submit"
+                    className="submit-button"
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <span className="spinner"></span>
+                    ) : initialData ? (
+                        'Обновить событие'
+                    ) : (
+                        'Создать событие'
+                    )}
+                </button>
+            </div>
         </form>
     );
 };
