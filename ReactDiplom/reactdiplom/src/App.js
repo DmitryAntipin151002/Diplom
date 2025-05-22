@@ -1,21 +1,26 @@
 // App.js
 import React from 'react';
 import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
-import LoginPage from './components/AuthS_Component/LoginPage';
-import RegisterPage from './components/AuthS_Component/RegisterPage';
-import VerifyCodePage from "./components/AuthS_Component/VerifyCodePage";
-import ErrorPage from "./components/AuthS_Component/ErrorPage";
-import RecoveryRequestPage from "./components/AuthS_Component/RecoveryRequestPage";
-import RecoveryPasswordPage from "./components/AuthS_Component/RecoveryPasswordPage";
-import Dashboard from "./components/Dashboard";
-import ProfilePage from "./components/Profile_Componemt/ProfilePage";
+import LoginPage from './components/features/auth/pages/loginPage/LoginPage';
+import RegisterPage from './components/features/auth/pages/registerPage/RegisterPage';
+import VerifyCodePage from "./components/features/auth/pages/verifyCode/VerifyCodePage";
+import ErrorPage from "./components/features/auth/pages/ErrorPage/ErrorPage";
+import RecoveryRequestPage from "./components/features/auth/pages/RecoveryPassword/RecoveryRequestPage";
+import RecoveryPasswordPage from "./components/features/auth/pages/RecoveryPassword/RecoveryPasswordPage";
+
+import ChatPage from "./components/features/chat/pages/ChatPage"
+
+
+import MyEvents from "./components/features/event/pages/MyEvents";
+import EventPage from "./components/features/event/pages/EventPage";
+import EventForm from "./components/features/event/pages/EventForm";
+import Dashboard from "./components/features/dashboard/pages/Dashboard";
+
+import ProfilePage from "./components/features/profile/pages/profilePage/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import FriendsPage from "./components/Profile_Componemt/FriendsPage";
-import ChatPage from "./components/Chat_Component/ChatPage"
-import EventForm from "./components/Event_Component/EventForm";
-import MyGames from "./components/Event_Component/MyEvents";
-import MyEvents from "./components/Event_Component/MyEvents";
-import EventPage from "./components/Event_Component/EventPage";
+import FriendsPage from "./components/features/profile/pages/profilePage/FriendsPage";
+
+
 
 
 
