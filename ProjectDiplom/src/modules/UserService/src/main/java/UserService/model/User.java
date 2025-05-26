@@ -76,8 +76,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recommendation> recommendations;
 
-
-    // В классе User добавим методы для доступа к данным профиля
     public String getSportType() {
         return profile != null ? profile.getSportType() : null;
     }

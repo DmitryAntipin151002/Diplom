@@ -15,7 +15,7 @@ public class UserProfile {
     private UUID userId;
 
     @OneToOne
-    @MapsId // Использует userId как ID и как внешний ключ к User
+    @MapsId
     @ToString.Exclude
     @JoinColumn(name = "user_id")
     private User user;

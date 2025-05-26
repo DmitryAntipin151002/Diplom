@@ -37,8 +37,6 @@ public class AuthenticationControllerImpl implements AuthenticationController {
         return ResponseEntity.ok(authenticationService.authenticate(loginInfo));
     }
 
-
-
     @Override
     @PostMapping("/{userId}/code")
     public ResponseEntity<JwtToken> getTokens(@PathVariable String userId,
@@ -86,7 +84,6 @@ public class AuthenticationControllerImpl implements AuthenticationController {
         return new ResponseEntity<>(verificationCodeDto, HttpStatus.OK);
     }
 
-    // исправить без параметра
     @Override
     @Operation(summary = "Проверка кода верификации")
     @ApiResponse(responseCode = CODE_OK, description = "Код верификации верный")

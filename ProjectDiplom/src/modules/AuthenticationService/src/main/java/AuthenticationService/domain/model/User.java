@@ -36,7 +36,6 @@ public class User {
     @Size(min = 60, max = 60)
     private String encryptedPassword;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "STATUS", referencedColumnName = "ID")
     private Status status;

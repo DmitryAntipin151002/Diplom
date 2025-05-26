@@ -49,8 +49,6 @@ public class TokenServiceImpl implements TokenService {
         }
     }
 
-
-
     private JwtRecoveryTokenDto getRecoveryToken(String userId) {
         String recoveryToken = jwtTokenUtil.createRecoveryToken(userId);
         return new JwtRecoveryTokenDto(userId, recoveryToken);

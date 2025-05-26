@@ -37,7 +37,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RoleService roleService;
     private final UserMapper userMapper;
     private final Random random = new Random();
-    private final AuthenticationServiceProperties authenticationServiceProperties;
     private final VerificationCodeRepository verificationCodeRepository;
 
     @Override
@@ -63,7 +62,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public VerificationCodeDto generateVerificationCode(String userId) {
-        // Убираем Redis вызовы. Логика может быть изменена для использования других механизмов.
         String code = String.valueOf(random.nextInt(900000) + 100000);
         return userMapper.codeToVerificationCodeDto(code);
     }

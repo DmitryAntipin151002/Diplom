@@ -19,7 +19,7 @@ public class ChatTypeEntity {
     private String name;
 
     @Column(name = "code", nullable = false, unique = true, length = 20)
-    private String code; // Добавьте это поле
+    private String code;
 
     @Column(length = 255)
     private String description;

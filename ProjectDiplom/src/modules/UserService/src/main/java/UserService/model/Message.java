@@ -38,10 +38,10 @@ public class Message {
     private Message replyTo;
 
     @Enumerated(EnumType.STRING)
-    private MessageStatus status = MessageStatus.SENT; // NEW: статус сообщения
+    private MessageStatus status = MessageStatus.SENT;
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
-    private List<MessageAttachment> attachments; // NEW: вложения
+    private List<MessageAttachment> attachments;
 
     public enum MessageStatus {
         SENT, DELIVERED, READ, EDITED, DELETED
